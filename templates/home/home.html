@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gateway</title>
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <script src="/static/js/home/home.js"></script>
+<body>
+<div>
+    <label for="process_info"></label><textarea id="process_info" rows="15%" cols="100%">process...</textarea>
+    <label for="version_info"></label><textarea id="version_info" rows="15%" cols="100%">undefined</textarea>
+</div>
+<div>
+    <label for="update_date"></label><input type = "text" id = "update_date" value="undefined" disabled>
+    <input type = "button" onclick = "clean();" value = "Clear"/>
+    <input type = "button" onclick = "update();" value = "Update"/>
+    <input type = "button" onclick = "stop();" value = "Stop"/>
+</div>
+</body>
+</html>
