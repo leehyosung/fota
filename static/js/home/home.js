@@ -37,7 +37,7 @@ $(document).ready(function() {
 });
 
 
-function update() {
+function start() {
     $.ajax({
             url:'./start',
             type:'post',
