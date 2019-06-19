@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session
 from flask_socketio import SocketIO, emit
-from updateTask.updateTask import UpdateTask
+from update.updateTask import UpdateTask
 
 app = Flask(__name__)
 socketio = SocketIO(app)
