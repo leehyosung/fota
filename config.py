@@ -1,0 +1,1 @@
+firmware_file_path = 'D:\firmware'
