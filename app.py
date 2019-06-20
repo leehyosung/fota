@@ -1,7 +1,12 @@
+import os
+import logging
+
 from flask import Flask, render_template, session
 from flask_socketio import SocketIO, emit
 from update.updateTask import UpdateTask
 from flask import request
+
+from OpenSSL import SSL
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -49,5 +54,20 @@ def connect():
     emit("connect", 'success')
 
 
+path = os.path.dirname(os.path.abspath(__file__))
+
+# context = SSL.Context(SSL.TLSv1_3_METHOD)
+# context.use_privatekey_file(path + '/cert/server/privatekey.pem')
+# context.use_certificate_file(path + '/cert/server/certificate.pem')
+
 if __name__ == '__main__':
-    app.run()
+    logging.info("Start RestAPI : listen %s:%s" % ('127.0.0.1', 8443))
+
+    # context = (path + '/cert/server/privatekey.pem', path + '/cert/server/certificate.pem')
+
+    app.run(
+        host='127.0.0.1',
+        port=8443,
+        debug = True,
+        # ssl_context=context,
+    )
