@@ -1,1 +1,2 @@
-firmware_file_path = 'D:\firmware'
+class Config(object):
+    FIRMWARE_FILE_PATH = 'D:\firmware'
