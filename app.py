@@ -11,11 +11,17 @@ from OpenSSL import SSL
 app = Flask(__name__)
 socketio = SocketIO(app)
 updateTask = UpdateTask(socketio)
+app.config.from_pyfile('config.py')
 
 
 @app.route('/')
 def home():
     return render_template('home/home.html')
+
+
+@app.route('/gateway')
+def gateway():
+    return render_template('gateway/gateway.html')
 
 
 # version check

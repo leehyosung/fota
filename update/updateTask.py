@@ -1,7 +1,11 @@
 import threading
 import time
 import requests
+from update.update import UpdateManage
+from version.version import VersionManage
 
+updateManage = UpdateManage()
+versionManage = VersionManage()
 
 class UpdateTask(threading.Thread):
 
@@ -16,6 +20,7 @@ class UpdateTask(threading.Thread):
             print("update check!")
             self.socketio.emit("process", "update check!!")
             #TODO version check 로직 추가
+
 
 
     def stop(self):
