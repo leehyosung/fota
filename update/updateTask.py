@@ -1,6 +1,5 @@
 import threading
 import time
-from tools.version import VersionManage
 
 
 class UpdateTask(threading.Thread):
@@ -9,7 +8,6 @@ class UpdateTask(threading.Thread):
         super(UpdateTask, self).__init__()
         self.socketio = socketio
         self._please_stop = threading.Event()
-        self.versionManage = VersionManage()
         self.firmware_path = firmware_path
 
     def run(self):
@@ -18,9 +16,6 @@ class UpdateTask(threading.Thread):
             print("update check!")
             self.socketio.emit("process", "update check!!")
             #TODO version check 로직 추가
-            self.version = self.versionManage.getVersion(self.firmware_path)
-            # self.updateManage.update(self.firmware_path, '1.0.0')
-
 
     def stop(self):
         self._please_stop.set()
