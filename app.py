@@ -1,5 +1,6 @@
 import os
 import logging
+from pathlib import Path
 
 from flask import Flask, render_template, session
 from flask_socketio import SocketIO, emit
@@ -62,18 +63,20 @@ def connect():
 
 path = os.path.dirname(os.path.abspath(__file__))
 
-# context = SSL.Context(SSL.TLSv1_3_METHOD)
+# context = SSL.Context(SSL.TLSv1_2_METHOD)
 # context.use_privatekey_file(path + '/cert/server/privatekey.pem')
 # context.use_certificate_file(path + '/cert/server/certificate.pem')
 
 if __name__ == '__main__':
     logging.info("Start RestAPI : listen %s:%s" % ('127.0.0.1', 8443))
 
-    # context = (path + '/cert/server/privatekey.pem', path + '/cert/server/certificate.pem')
+    # https://stackoverflow.com/questions/28579142/attributeerror-context-object-has-no-attribute-wrap-socket
+    context = (path + '/cert/server/certificate.pem', path + '/cert/server/privatekey.pem')
 
     app.run(
         host='127.0.0.1',
         port=8443,
         debug = True,
-        # ssl_context=context,
+        threaded= True,
+        ssl_context=context,
     )
