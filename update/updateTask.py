@@ -1,8 +1,8 @@
 import threading
 import time
-import requests
-from update.update import UpdateManage
-from version.version import VersionManage
+from tools.update import UpdateManage
+from tools.version import VersionManage
+
 
 class UpdateTask(threading.Thread):
 
