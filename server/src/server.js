@@ -40,7 +40,7 @@ https.createServer(options, (req, res) => {
   }
 
   finalize(res, ret)
-}).listen(port);
+}).listen(port)
 
 function finalize(res, result) {
   res.writeHead(result.statusCode)
