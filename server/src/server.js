@@ -1,7 +1,7 @@
 'use strict'
 
-const https = require('https');
-const fs = require('fs');
+const https = require('https')
+const fs = require('fs')
 const path = require('path')
 const url = require('url')
 
@@ -9,8 +9,8 @@ const version = require('./version')
 const firmware = require('./firmware')
 
 const options = {
-  cert: fs.readFileSync(__dirname + '/../../cert/server/certificate.pem'),
-  key: fs.readFileSync(__dirname + '/../../cert/server/privatekey.pem'),
+  cert: fs.readFileSync(path.join(__dirname, '../../cert/server/certificate.pem')),
+  key: fs.readFileSync(path.join(__dirname, '../../cert/server/privatekey.pem')),
   passphrase: 'server',
   minVersion: 'TLSv1.3'
 };
@@ -18,25 +18,32 @@ const options = {
 const port = 8443
 
 https.createServer(options, (req, res) => {
-  let ret = null
+  let ret = {
+    statusCode: 200,
+    body: 'hello world'
+  }
 
-  let urlParsed = url.parse(req.url, true)
+  try {
+    const urlParsed = url.parse(req.url, true)
 
-  switch (urlParsed.pathname) {
-    case '/version':
-      ret = version()
-      break
+    switch (urlParsed.pathname) {
+      case '/version':
+        ret = version()
+        break
 
-    case '/firmware':
-      ret = firmware(urlParsed.query.version)
-      break
+      case '/firmware':
+        ret = firmware(urlParsed.query.version)
+        break
 
-    default:
-      ret = {
-        statusCode: 200,
-        body: 'hello world'
-      }
-      break
+      default:
+        break
+    }
+  } catch (e) {
+    console.error(e)
+    ret = {
+      statusCode: 500,
+      body: e.message
+    }
   }
 
   finalize(res, ret)
