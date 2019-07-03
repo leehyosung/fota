@@ -128,3 +128,4 @@ dmypy.json
 .idea
 
 .vscode
+server/node_modules

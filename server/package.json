@@ -1,0 +1,10 @@
+{
+  "name": "2jo-fota",
+  "version": "1.0.0",
+  "description": "2jo-fota",
+  "dependencies": {
+    "request-promise": "^4.2.4"
+  },
+  "devDependencies": {},
+  "scripts": {}
+}
