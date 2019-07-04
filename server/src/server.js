@@ -47,6 +47,7 @@ https.createServer(options, (req, res) => {
     }
   } catch (e) {
     console.error(e)
+
     ret = {
       statusCode: 500,
       body: e.message
