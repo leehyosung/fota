@@ -18,10 +18,26 @@ const options = {
 }
 
 const req = https.request(options, res => {
+  const cipher = req.connection.getCipher()
+
   res.on('data', data => {
+    console.log(`TLS version : ${cipher.version}`)
+    console.log(`Cipher Name : ${cipher.name}`)
+
     console.log(data.toString())
+
     process.stdout.write(data)
   })
 })
 
 req.end()
+
+
+// https://nodejs.org/api/tls.html
+// There are only 5 TLSv1.3 cipher suites:
+
+// 'TLS_AES_256_GCM_SHA384'
+// 'TLS_CHACHA20_POLY1305_SHA256'
+// 'TLS_AES_128_GCM_SHA256'
+// 'TLS_AES_128_CCM_SHA256'
+// 'TLS_AES_128_CCM_8_SHA256'

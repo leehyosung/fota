@@ -25,6 +25,11 @@ const options = {
 const port = 8443
 
 https.createServer(options, (req, res) => {
+  const cipher = req.connection.getCipher()
+
+  console.log(`TLS version : ${cipher.version}`)
+  console.log(`Cipher Name : ${cipher.name}`)
+
   let ret = {
     statusCode: 200,
     body: 'hello world'
@@ -56,6 +61,8 @@ https.createServer(options, (req, res) => {
 
   finalize(res, ret)
 }).listen(port)
+
+console.log('2JO-SOTA server started successfully.')
 
 function finalize(res, result) {
   res.writeHead(result.statusCode)
