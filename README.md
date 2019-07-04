@@ -18,3 +18,9 @@
 
 - Server CN : 2jo-server
 - Gateway CN : 2jo-gateway
+
+## Addresses
+
+**Only applies in 2jo network**
+
+- Server : 192.168.0.6

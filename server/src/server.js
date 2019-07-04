@@ -25,10 +25,11 @@ const options = {
 const port = 8443
 
 https.createServer(options, (req, res) => {
+  const urlParsed = url.parse(req.url, true)
+
   const cipher = req.connection.getCipher()
 
-  console.log(`TLS version : ${cipher.version}`)
-  console.log(`Cipher Name : ${cipher.name}`)
+  console.log(`REQ | ${req.connection.remoteAddress} | ${urlParsed.pathname} | ${cipher.version} | ${cipher.name}`)
 
   let ret = {
     statusCode: 200,
@@ -36,8 +37,6 @@ https.createServer(options, (req, res) => {
   }
 
   try {
-    const urlParsed = url.parse(req.url, true)
-
     switch (urlParsed.pathname) {
       case '/version':
         ret = version()

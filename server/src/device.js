@@ -5,9 +5,9 @@ const https = require('https')
 const path = require('path')
 
 const options = {
-  hostname: 'localhost',
+  hostname: '192.168.0.6',
   port: 8443,
-  path: '/',
+  path: '/version',
   method: 'GET',
 
   cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
@@ -21,12 +21,8 @@ const req = https.request(options, res => {
   const cipher = req.connection.getCipher()
 
   res.on('data', data => {
-    console.log(`TLS version : ${cipher.version}`)
-    console.log(`Cipher Name : ${cipher.name}`)
-
+    console.log(`[CONNECTION] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
     console.log(data.toString())
-
-    process.stdout.write(data)
   })
 })
 
