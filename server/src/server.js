@@ -11,6 +11,13 @@ const firmware = require('./firmware')
 const options = {
   cert: fs.readFileSync(path.join(__dirname, '../../cert/server/certificate.pem')),
   key: fs.readFileSync(path.join(__dirname, '../../cert/server/privatekey.pem')),
+
+  // This is necessary only if using client certificate authentication. : true
+  requestCert: true,
+  rejectUnauthorized: true,
+
+  // This is necessary only if the client uses a self-signed certificate.
+  ca: [fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem'))],
   passphrase: 'server',
   minVersion: 'TLSv1.3'
 };
