@@ -1,2 +1,6 @@
-개발 환경 python 3 
-pip install -r requirements.txt
+# 2JO - SOTA
+
+## Certificates
+
+- Server CN : 2jo-server
+- Gateway CN : 2jo-gateway
