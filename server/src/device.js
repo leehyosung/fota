@@ -5,9 +5,9 @@ const https = require('https')
 const path = require('path')
 
 const options = {
-  hostname: 'localhost',
+  hostname: '192.168.0.6',
   port: 8443,
-  path: '/',
+  path: '/version',
   method: 'GET',
 
   cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
@@ -18,10 +18,22 @@ const options = {
 }
 
 const req = https.request(options, res => {
+  const cipher = req.connection.getCipher()
+
   res.on('data', data => {
+    console.log(`[CONNECTION] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
     console.log(data.toString())
-    process.stdout.write(data)
   })
 })
 
 req.end()
+
+
+// https://nodejs.org/api/tls.html
+// There are only 5 TLSv1.3 cipher suites:
+
+// 'TLS_AES_256_GCM_SHA384'
+// 'TLS_CHACHA20_POLY1305_SHA256'
+// 'TLS_AES_128_GCM_SHA256'
+// 'TLS_AES_128_CCM_SHA256'
+// 'TLS_AES_128_CCM_8_SHA256'
