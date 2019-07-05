@@ -3,37 +3,72 @@
 const fs = require('fs')
 const https = require('https')
 const path = require('path')
+const interactor = require('./interactor')
 
-const options = {
-  hostname: '192.168.0.6',
-  port: 8443,
-  path: '/version',
-  method: 'GET',
+printGuide()
+interactor(onInput)
 
-  cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
-  key: fs.readFileSync(path.join(__dirname, '../../cert/device1/privatekey.pem')),
-  ca: fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem')),
-  passphrase: 'device1',
-  servername: '2jo-server', //Should be the same with server certificate's CN
+function request(url) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'localhost',
+      port: 8443,
+      path: url,
+      method: 'GET',
+
+      cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
+      key: fs.readFileSync(path.join(__dirname, '../../cert/device1/privatekey.pem')),
+      ca: fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem')),
+      passphrase: 'device1',
+      servername: '2jo-server', //Should be the same with server certificate's CN
+
+      rejectUnauthorized: true,
+    }
+
+    const req = https.request(options, res => {
+      const cipher = req.connection.getCipher()
+
+      res.on('data', data => {
+        console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
+        console.log(`[RES:${url}] ${data.toString()}`)
+
+        resolve()
+      })
+    })
+
+    req.on('error', e => {
+      console.error(e);
+      reject()
+    });
+
+    req.end()
+  })
+
 }
 
-const req = https.request(options, res => {
-  const cipher = req.connection.getCipher()
+function printGuide() {
+  console.log(`\n---------------- 2JO device emulator! ----------------` +
+    `\n[version] Type for the latest version checking.` +
+    `\n[firmware] Type for downloading the latest firmware.` +
+    `\n[quit] Type for exit.` +
+    `\n------------------------------------------------------\n`)
+}
 
-  res.on('data', data => {
-    console.log(`[CONNECTION] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
-    console.log(data.toString())
-  })
-})
+async function onInput(input) {
+  switch (input.toLowerCase()) {
+    case 'version':
+      await request('/version')
+      printGuide()
+      break
 
-req.end()
+    case 'firmware':
+      await request('/firmware')
+      printGuide()
+      break
 
-
-// https://nodejs.org/api/tls.html
-// There are only 5 TLSv1.3 cipher suites:
-
-// 'TLS_AES_256_GCM_SHA384'
-// 'TLS_CHACHA20_POLY1305_SHA256'
-// 'TLS_AES_128_GCM_SHA256'
-// 'TLS_AES_128_CCM_SHA256'
-// 'TLS_AES_128_CCM_8_SHA256'
+    default:
+      console.log(`Invalid input! :w ${input}`)
+      printGuide()
+      break
+  }
+}

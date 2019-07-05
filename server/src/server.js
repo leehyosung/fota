@@ -29,7 +29,7 @@ https.createServer(options, (req, res) => {
 
   const cipher = req.connection.getCipher()
 
-  console.log(`REQ | ${req.connection.remoteAddress} | ${urlParsed.pathname} | ${cipher.version} | ${cipher.name}`)
+  console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
 
   let ret = {
     statusCode: 200,

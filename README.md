@@ -24,3 +24,18 @@
 **Only applies in 2jo network**
 
 - Server : 192.168.0.6
+
+
+
+## SOTA Server
+
+### Prerequite
+
+- nodejs version >= 12.5
+
+### How to install / run SOTA Server
+
+- `cd server` : Move to server directory
+- `npm install` : SOTA server install
+- `npm run server` : Run SOTA server
+- `npm run device` : Run SOTA device emulator & follow the guide in prompt
