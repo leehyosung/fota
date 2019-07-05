@@ -62,7 +62,7 @@ function onInput(input) {
       break
 
     default:
-      console.log(`echo : ${input}`)
+      console.log(`Invalid input! :w ${input}`)
       break
   }
 }

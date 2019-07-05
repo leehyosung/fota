@@ -6,5 +6,8 @@
     "request-promise": "^4.2.4"
   },
   "devDependencies": {},
-  "scripts": {}
+  "scripts": {
+    "server": "node ./src/server.js",
+    "device": "node ./src/device.js"
+  }
 }
