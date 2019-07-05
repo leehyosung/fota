@@ -32,13 +32,13 @@ function request(url) {
         console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
         console.log(`[RES:${url}] ${data.toString()}`)
 
-        resolve()
+        resolve(data)
       })
     })
 
     req.on('error', e => {
       console.error(e);
-      reject()
+      reject(e)
     });
 
     req.end()
@@ -62,7 +62,7 @@ async function onInput(input) {
       break
 
     case 'firmware':
-      await request('/firmware')
+      const res = await request('/firmware')
       printGuide()
       break
 
