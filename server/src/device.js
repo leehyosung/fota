@@ -8,39 +8,42 @@ const interactor = require('./interactor')
 printGuide()
 interactor(onInput)
 
-function request(url, onEnd) {
-  const options = {
-    hostname: 'localhost',
-    port: 8443,
-    path: url,
-    method: 'GET',
+function request(url) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'localhost',
+      port: 8443,
+      path: url,
+      method: 'GET',
 
-    cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
-    key: fs.readFileSync(path.join(__dirname, '../../cert/device1/privatekey.pem')),
-    ca: fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem')),
-    passphrase: 'device1',
-    servername: '2jo-server', //Should be the same with server certificate's CN
+      cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
+      key: fs.readFileSync(path.join(__dirname, '../../cert/device1/privatekey.pem')),
+      ca: fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem')),
+      passphrase: 'device1',
+      servername: '2jo-server', //Should be the same with server certificate's CN
 
-    rejectUnauthorized: true,
-  }
+      rejectUnauthorized: true,
+    }
 
-  const req = https.request(options, res => {
-    const cipher = req.connection.getCipher()
+    const req = https.request(options, res => {
+      const cipher = req.connection.getCipher()
 
-    res.on('data', data => {
-      console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
-      console.log(`[RES:${url}] ${data.toString()}`)
+      res.on('data', data => {
+        console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
+        console.log(`[RES:${url}] ${data.toString()}`)
 
-      onEnd()
+        resolve()
+      })
     })
+
+    req.on('error', e => {
+      console.error(e);
+      reject()
+    });
+
+    req.end()
   })
 
-  req.on('error', e => {
-    console.error(e);
-    onEnd()
-  });
-
-  req.end()
 }
 
 function printGuide() {
@@ -48,21 +51,24 @@ function printGuide() {
     `\n[version] Type for the latest version checking.` +
     `\n[firmware] Type for downloading the latest firmware.` +
     `\n[quit] Type for exit.` +
-    `\n------------------------------------------------------`)
+    `\n------------------------------------------------------\n`)
 }
 
-function onInput(input) {
+async function onInput(input) {
   switch (input.toLowerCase()) {
     case 'version':
-      request('/version', printGuide)
+      await request('/version')
+      printGuide()
       break
 
     case 'firmware':
-      request('/firmware', printGuide)
+      await request('/firmware')
+      printGuide()
       break
 
     default:
       console.log(`Invalid input! :w ${input}`)
+      printGuide()
       break
   }
 }
