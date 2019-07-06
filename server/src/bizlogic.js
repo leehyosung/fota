@@ -17,7 +17,7 @@ function version() {
 }
 
 function firmware(requestVersion) {
-  const [, firmwarePath] = firmwareInfo(requestVersion)
+  const [version, firmwarePath] = firmwareInfo(requestVersion)
 
   let binary = firmwarePath ? fs.readFileSync(firmwarePath) : undefined
 
@@ -25,7 +25,7 @@ function firmware(requestVersion) {
     statusCode: binary ? 200 : 404,
     body: {
       firmware: {
-        version: requestVersion,
+        version: version,
         data: binary ? binary.toString('base64') : '',
         hash: binary ? crypto.createHash('sha256').update(binary).digest('base64') : '',
       }
