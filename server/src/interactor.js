@@ -14,7 +14,12 @@ async function startConsole(onInput) {
       if (input.toLowerCase() === 'quit') {
         rl.close()
       } else {
-        await onInput(input)
+        try {
+          await onInput(input)
+        } catch (e) {
+          console.error(e)
+        }
+
         rl.prompt()
       }
     })

@@ -3,6 +3,8 @@
 const fs = require('fs')
 const https = require('https')
 const path = require('path')
+const crypto = require('crypto')
+
 const interactor = require('./interactor')
 
 printGuide()
@@ -28,17 +30,17 @@ function request(url) {
     const req = https.request(options, res => {
       const cipher = req.connection.getCipher()
 
-      res.on('data', data => {
+      res.on('data', body => {
         console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
-        console.log(`[RES:${url}] ${data.toString()}`)
+        console.log(`[RES:${url}] ${res.statusCode} ${body.toString()}`)
 
-        resolve()
+        resolve([res.statusCode, body])
       })
     })
 
     req.on('error', e => {
       console.error(e);
-      reject()
+      reject(e)
     });
 
     req.end()
@@ -47,28 +49,41 @@ function request(url) {
 }
 
 function printGuide() {
-  console.log(`\n---------------- 2JO device emulator! ----------------` +
+  const msg =
+    `\n---------------- 2JO device emulator! ----------------------------------` +
     `\n[version] Type for the latest version checking.` +
     `\n[firmware] Type for downloading the latest firmware.` +
-    `\n[quit] Type for exit.` +
-    `\n------------------------------------------------------\n`)
+    `\n[firmware?version=?] Type for downloading the specific firmware version.` +
+    `\n[quit or ctrl + C] Type for exit.` +
+    `\n------------------------------------------------------------------------\n`
+
+  console.log(msg)
 }
 
 async function onInput(input) {
-  switch (input.toLowerCase()) {
-    case 'version':
-      await request('/version')
-      printGuide()
-      break
+  input = input.toLowerCase()
 
-    case 'firmware':
-      await request('/firmware')
-      printGuide()
-      break
+  if (validate(input) === false) {
+    console.log(`Invalid input! : ${input}`)
+  } else {
+    let [statusCode, body] = await request('/' + input)
 
-    default:
-      console.log(`Invalid input! :w ${input}`)
-      printGuide()
-      break
+    if (statusCode === 200 && input.startsWith('firmware')) {
+      const res = JSON.parse(body)
+
+      const binary = Buffer.from(res.firmware.data, 'base64')
+      const hash = res.firmware.data !== '' ? crypto.createHash('sha256').update(binary).digest('base64') : ''
+
+      console.log('')
+      console.log(`firmware hash in res : ${res.firmware.hash}`)
+      console.log(`firmware hash made   : ${hash}`)
+    }
   }
+
+  printGuide()
+}
+
+function validate(input) {
+  // TODO : validation code
+  return true
 }
