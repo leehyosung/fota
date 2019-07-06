@@ -13,6 +13,8 @@
 - Apply TLSv1.3
 - Handle certificate / private key files securely
 - Handle private key passphrase securely
+- Validate any input (for device / server)
+- Hide any exception information in output of server
 
 ## About Certificates
 

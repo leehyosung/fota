@@ -5,8 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const url = require('url')
 
-const version = require('./version')
-const firmware = require('./firmware')
+const bizlogic = require('./bizlogic')
 
 const options = {
   cert: fs.readFileSync(path.join(__dirname, '../../cert/server/certificate.pem')),
@@ -31,34 +30,38 @@ https.createServer(options, (req, res) => {
 
   console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
 
-  let ret = {
-    statusCode: 200,
-    body: 'hello world'
-  }
-
   try {
     switch (urlParsed.pathname) {
       case '/version':
-        ret = version()
+        finalize(res, bizlogic.version())
         break
 
       case '/firmware':
-        ret = firmware(urlParsed.query.version)
+        finalize(res, bizlogic.firmware(urlParsed.query.version))
+        break
+
+      case '/':
+        finalize(res, {
+          statusCode: 200,
+          body: 'hello 2'
+        })
         break
 
       default:
+        finalize(res, {
+          statusCode: 404,
+          body: `Invalid Path : ${urlParsed.pathname}`
+        })
         break
     }
   } catch (e) {
     console.error(e)
 
-    ret = {
+    finalize(res, {
       statusCode: 500,
-      body: e.message
-    }
+      body: 'Internal Server Error'
+    })
   }
-
-  finalize(res, ret)
 }).listen(port)
 
 console.log('2JO-SOTA server started successfully.')
