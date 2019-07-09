@@ -14,7 +14,7 @@ function request(url) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'localhost',
-      port: 8443,
+      port: 9443,
       path: url,
       method: 'GET',
 
@@ -22,7 +22,7 @@ function request(url) {
       key: fs.readFileSync(path.join(__dirname, '../../cert/device1/privatekey.pem')),
       ca: fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem')),
       passphrase: 'device1',
-      servername: '2jo-server', //Should be the same with server certificate's CN
+      servername: '2jo-gateway', //Should be the same with server certificate's CN
 
       rejectUnauthorized: true,
     }
