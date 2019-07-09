@@ -10,6 +10,8 @@ const interactor = require('./interactor')
 printGuide()
 interactor(onInput)
 
+let certificate = null;
+
 function request(url) {
   return new Promise((resolve, reject) => {
     const options = {
@@ -30,7 +32,7 @@ function request(url) {
     const req = https.request(options, res => {
       const cipher = req.connection.getCipher()
 
-      const certificate = res.connection.getPeerCertificate()
+      certificate = certificate ? certificate : res.connection.getPeerCertificate()
 
       res.on('data', body => {
         console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
@@ -81,7 +83,7 @@ async function onInput(input) {
   printGuide()
 }
 
-function verify(signature, binary, certificate) {
+function verify(signature, binary) {
   const verify = crypto.createVerify('SHA256');
   verify.update(binary);
   verify.end();
