@@ -15,6 +15,17 @@
 - Handle private key passphrase securely
 - Validate any input (for device / server)
 - Hide any exception information in output of server
+- Verify firmware via signature
+- Handle resources via manual key store
+
+#### Key Store
+
+- Must provide input / output interface
+- Works on its own OS process (different with SOTA application process)
+- Works on its own account
+- Resources should be placed in the key store account
+
+- 로깅 구현
 
 ## About Certificates
 

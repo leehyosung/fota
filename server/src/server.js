@@ -5,19 +5,20 @@ const fs = require('fs')
 const path = require('path')
 const url = require('url')
 
+const keystore = require('./keystore')
 const bizlogic = require('./bizlogic')
 
 const options = {
-  cert: fs.readFileSync(path.join(__dirname, '../../cert/server/certificate.pem')),
-  key: fs.readFileSync(path.join(__dirname, '../../cert/server/privatekey.pem')),
+  cert: keystore.certificate(),
+  key: keystore.privateKey(),
 
   // This is necessary only if using client certificate authentication. : true
   requestCert: true,
   rejectUnauthorized: true,
 
   // This is necessary only if the client uses a self-signed certificate.
-  ca: [fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem'))],
-  passphrase: 'server',
+  ca: [keystore.certificateOfCa()],
+  passphrase: keystore.passphraseOfPrivateKey(),
   minVersion: 'TLSv1.3'
 };
 

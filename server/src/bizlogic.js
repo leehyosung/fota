@@ -4,6 +4,8 @@ const fs = require('fs')
 const crypto = require('crypto')
 const path = require('path')
 
+const keystore = require('./keystore')
+
 module.exports.version = version
 module.exports.firmware = firmware
 
@@ -27,7 +29,7 @@ function firmware(requestVersion) {
       firmware: {
         version: version,
         data: binary ? binary.toString('base64') : '',
-        hash: binary ? crypto.createHash('sha256').update(binary).digest('base64') : '',
+        signature: binary ? signature(binary) : '',
       }
     }
   }
@@ -59,4 +61,18 @@ function firmwareInfo(requestVersion) {
 
     return [version.toString(), path.join(__dirname, '../../firmware/', fileName)]
   }
+}
+
+function signature(data) {
+  const sign = crypto.createSign('SHA256')
+
+  sign.write(data)
+  sign.end()
+
+  const privateKey = crypto.createPrivateKey({
+    key: keystore.privateKey(),
+    passphrase: keystore.passphraseOfPrivateKey()
+  })
+
+  return sign.sign(privateKey, 'base64')
 }
