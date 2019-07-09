@@ -30,11 +30,13 @@ function request(url) {
     const req = https.request(options, res => {
       const cipher = req.connection.getCipher()
 
+      const certificate = res.connection.getPeerCertificate()
+
       res.on('data', body => {
         console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
         console.log(`[RES:${url}] ${res.statusCode} ${body.toString()}`)
 
-        resolve([res.statusCode, body])
+        resolve([res.statusCode, body, certificate])
       })
     })
 
@@ -45,7 +47,6 @@ function request(url) {
 
     req.end()
   })
-
 }
 
 function printGuide() {
@@ -66,21 +67,32 @@ async function onInput(input) {
   if (validate(input) === false) {
     console.log(`Invalid input! : ${input}`)
   } else {
-    let [statusCode, body] = await request('/' + input)
+    let [statusCode, body, certificate] = await request('/' + input)
 
     if (statusCode === 200 && input.startsWith('firmware')) {
       const res = JSON.parse(body)
 
-      const binary = Buffer.from(res.firmware.data, 'base64')
-      const hash = res.firmware.data !== '' ? crypto.createHash('sha256').update(binary).digest('base64') : ''
+      const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), certificate)
 
-      console.log('')
-      console.log(`firmware hash in res : ${res.firmware.hash}`)
-      console.log(`firmware hash made   : ${hash}`)
+      console.log(`\nresult of signature verification : ${resultOfVerification}`)
     }
   }
 
   printGuide()
+}
+
+function verify(signature, binary, certificate) {
+  const verify = crypto.createVerify('SHA256');
+  verify.update(binary);
+  verify.end();
+
+  const publicKey = {
+    key: certificate.pubkey,
+    format: 'der',
+    type: 'spki'
+  }
+
+  return verify.verify(crypto.createPublicKey(publicKey), signature, 'base64')
 }
 
 function validate(input) {
