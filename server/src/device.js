@@ -12,7 +12,7 @@ interactor(onInput)
 
 let certificate = null;
 
-function request(url) {
+async function request(url) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'localhost',
@@ -29,25 +29,22 @@ function request(url) {
       rejectUnauthorized: true,
     }
 
-    const req = https.request(options, res => {
-      const cipher = req.connection.getCipher()
+    https.request(options, res => {
+      const cipher = res.connection.getCipher()
 
       certificate = certificate ? certificate : res.connection.getPeerCertificate()
 
       res.on('data', body => {
-        console.log(`[REQ:${url}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
-        console.log(`[RES:${url}] ${res.statusCode} ${body.toString()}`)
+        console.log(`[LCOAL CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
+        console.log(`[REMOTE CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
+        console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
+        console.log(`[RES:${url}] ${res.statusCode}\n${JSON.stringify(JSON.parse(body.toString()), null, 2)}`)
 
         resolve([res.statusCode, body, certificate])
       })
-    })
-
-    req.on('error', e => {
-      console.error(e);
+    }).on('error', e => {
       reject(e)
-    });
-
-    req.end()
+    }).end()
   })
 }
 
