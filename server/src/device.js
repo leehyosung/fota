@@ -1,11 +1,12 @@
 'use strict'
 
-const fs = require('fs')
 const https = require('https')
-const path = require('path')
 const crypto = require('crypto')
 
+const Keystore = require('./Keystore')
 const interactor = require('./interactor')
+
+const keystore = new Keystore('gateway')
 
 printGuide()
 interactor(onInput)
@@ -20,11 +21,12 @@ async function request(url) {
       path: url,
       method: 'GET',
 
-      cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
-      key: fs.readFileSync(path.join(__dirname, '../../cert/device1/privatekey.pem')),
-      ca: fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem')),
-      passphrase: 'device1',
-      servername: '2jo-server', //Should be the same with server certificate's CN
+      cert: keystore.certificate(),
+      key: keystore.privateKey(),
+      ca: keystore.certificateOfCa(),
+      passphrase: keystore.passphraseOfPrivateKey(),
+
+      servername: keystore.peerCommonName(), //Should be the same with server certificate's CN
 
       rejectUnauthorized: true,
     }

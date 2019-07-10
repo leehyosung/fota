@@ -4,10 +4,12 @@ const fs = require('fs')
 const crypto = require('crypto')
 const path = require('path')
 
-const keystore = require('./keystore')
+const Keystore = require('./Keystore')
 
 module.exports.version = version
 module.exports.firmware = firmware
+
+const keystore = new Keystore('server')
 
 function version() {
   return {

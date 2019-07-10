@@ -1,12 +1,12 @@
 'use strict'
 
 const https = require('https')
-const fs = require('fs')
-const path = require('path')
 const url = require('url')
 
-const keystore = require('./keystore')
+const Keystore = require('./Keystore')
 const bizlogic = require('./bizlogic')
+
+const keystore = new Keystore('server')
 
 const options = {
   cert: keystore.certificate(),

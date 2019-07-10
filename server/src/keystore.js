@@ -1,26 +1,43 @@
 'use strict'
 
 const fs = require('fs')
-const crypto = require('crypto')
 const path = require('path')
 
-module.exports.certificate = certificate
-module.exports.certificateOfCa = certificateOfCa
-module.exports.privateKey = privateKey
-module.exports.passphraseOfPrivateKey = passphraseOfPrivateKey
+module.exports = class Keystore {
+  constructor(module) {
+    if (['server', 'gateway', 'device1', 'device2'].includes(module) === false) {
+      throw new Error(`Invalid module name : ${module}`)
+    }
 
-function certificate() {
-  return fs.readFileSync(path.join(__dirname, '../../cert/server/certificate.pem'))
-}
+    this.module = module
+  }
 
-function certificateOfCa() {
-  return fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem'))
-}
+  certificate() {
+    return fs.readFileSync(path.join(__dirname, `../../cert/${this.module}/certificate.pem`))
+  }
 
-function privateKey() {
-  return fs.readFileSync(path.join(__dirname, '../../cert/server/privatekey.pem'))
-}
+  certificateOfCa() {
+    return fs.readFileSync(path.join(__dirname, `../../cert/ca/certificate.pem`))
+  }
 
-function passphraseOfPrivateKey() {
-  return 'server'
+  privateKey() {
+    return fs.readFileSync(path.join(__dirname, `../../cert/${this.module}/privatekey.pem`))
+  }
+
+  passphraseOfPrivateKey() {
+    return this.module
+  }
+
+  peerCommonName() {
+    switch (this.module) {
+      case 'gateway':
+        return '2jo-server'
+      case 'device1':
+        return '2jo-gateway'
+      case 'device2':
+        return '2jo-gateway'
+      default:
+        throw new Error(`Invalid module name : ${this.module}`)
+    }
+  }
 }
