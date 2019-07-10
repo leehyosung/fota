@@ -19,7 +19,7 @@ const options = {
   // This is necessary only if the client uses a self-signed certificate.
   ca: [keystore.certificateOfCa()],
   passphrase: keystore.passphraseOfPrivateKey(),
-  minVersion: 'TLSv1.3'
+  minVersion: 'TLSv1.3',
 };
 
 const port = 8443
@@ -28,7 +28,10 @@ https.createServer(options, (req, res) => {
   const urlParsed = url.parse(req.url, true)
 
   const cipher = req.connection.getCipher()
+  const cert = req.connection.getPeerCertificate(true)
 
+  console.log(`[LCOAL CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`)
+  console.log(`[REMOTE CERT] ${cert.subject.CN} ${cert.fingerprint}`)
   console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
 
   try {
