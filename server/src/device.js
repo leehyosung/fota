@@ -6,31 +6,35 @@ const crypto = require('crypto')
 const Keystore = require('./Keystore')
 const interactor = require('./interactor')
 
-const keystore = new Keystore('gateway')
+const keystore = new Keystore('gateway', false)
 
 printGuide()
 interactor(onInput)
 
 let certificate = null;
 
+async function getOptions(url) {
+  return {
+    hostname: 'localhost',
+    port: 8443,
+    path: url,
+    method: 'GET',
+
+    cert: await keystore.certificate(),
+    key: await keystore.privateKey(),
+    ca: await keystore.certificateOfCa(),
+    passphrase: await keystore.passphraseOfPrivateKey(),
+
+    servername: await keystore.peerCommonName(), //Should be the same with server certificate's CN
+
+    rejectUnauthorized: true,
+  }
+}
+
 async function request(url) {
+  const options = await getOptions(url)
+
   return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'localhost',
-      port: 8443,
-      path: url,
-      method: 'GET',
-
-      cert: keystore.certificate(),
-      key: keystore.privateKey(),
-      ca: keystore.certificateOfCa(),
-      passphrase: keystore.passphraseOfPrivateKey(),
-
-      servername: keystore.peerCommonName(), //Should be the same with server certificate's CN
-
-      rejectUnauthorized: true,
-    }
-
     https.request(options, res => {
       const cipher = res.connection.getCipher()
 

@@ -1,43 +1,46 @@
 'use strict'
 
-const fs = require('fs')
 const path = require('path')
 
+const config = require('./config')
+
+
 module.exports = class Keystore {
-  constructor(module) {
-    if (['server', 'gateway', 'device1', 'device2'].includes(module) === false) {
-      throw new Error(`Invalid module name : ${module}`)
+  constructor(service, async = false) {
+    if (['server', 'gateway', 'device1', 'device2'].includes(service) === false) {
+      throw new Error(`Invalid module name : ${service}`)
     }
 
-    this.module = module
+    this.service = service
+    this.async = async
   }
 
-  certificate() {
-    return fs.readFileSync(path.join(__dirname, `../../cert/${this.module}/certificate.pem`))
+  async certificate() {
+    return this.async ? this.__keyAsync('certificate') : config.get(this.service, 'certificate')
   }
 
-  certificateOfCa() {
-    return fs.readFileSync(path.join(__dirname, `../../cert/ca/certificate.pem`))
+  async certificateOfCa() {
+    return this.async ? this.__keyAsync('certificateOfCa') : config.get(this.service, 'certificateOfCa')
   }
 
-  privateKey() {
-    return fs.readFileSync(path.join(__dirname, `../../cert/${this.module}/privatekey.pem`))
+  async privateKey() {
+    return this.async ? this.__keyAsync('privateKey') : config.get(this.service, 'privateKey')
   }
 
-  passphraseOfPrivateKey() {
-    return this.module
+  async passphraseOfPrivateKey() {
+    return this.async ? (await this.__keyAsync('passphraseOfPrivateKey')).toString() : config.get(this.service, 'passphraseOfPrivateKey')
   }
 
-  peerCommonName() {
-    switch (this.module) {
-      case 'gateway':
-        return '2jo-server'
-      case 'device1':
-        return '2jo-gateway'
-      case 'device2':
-        return '2jo-gateway'
-      default:
-        throw new Error(`Invalid module name : ${this.module}`)
-    }
+  async peerCommonName() {
+    return this.async ? (await this.__keyAsync('peerCommonName')).toString() : config.get(this.service, 'peerCommonName')
+  }
+
+  __keyAsync(key) {
+    return new Promise(resolve => {
+      require('child_process').fork(path.join(__dirname, './keystoreExecutor.js'), [this.service, key])
+        .on('message', message => {
+          resolve(Buffer.from(message))
+        })
+    })
   }
 }
