@@ -2,6 +2,17 @@
 
 const fs = require('fs')
 const path = require('path')
+const keys = require('../../config/keys.json')
+
+
+module.exports.getAsync = async (service, key) => {
+  return new Promise(resolve => {
+    require('child_process').fork(path.join(__dirname, './keystoreExecutor.js'), [service, key])
+      .on('message', message => {
+        resolve(Buffer.from(message))
+      })
+  })
+}
 
 module.exports.get = (service, key) => {
   switch (key) {
@@ -15,16 +26,16 @@ module.exports.get = (service, key) => {
       return fs.readFileSync(path.join(__dirname, `../../cert/ca/certificate.pem`))
 
     case 'passphraseOfPrivateKey':
-      return service
+      return keys.passphrase[service]
 
     case 'peerCommonName':
       switch (service) {
         case 'gateway':
-          return '2jo-server'
+          return keys.cn['server']
         case 'device1':
-          return '2jo-gateway'
+          return keys.cn['gateway']
         case 'device2':
-          return '2jo-gateway'
+          return keys.cn['gateway']
         default:
           throw new Error(`Invalid service name : ${service}`)
       }
@@ -32,5 +43,11 @@ module.exports.get = (service, key) => {
 
     default:
       throw new Error(`Invalid key name : ${key}`)
+  }
+}
+
+module.exports.apply = () => {
+  if (require('../config.json').mode !== 'debug') {
+    console.debug = () => {}
   }
 }

@@ -2,6 +2,12 @@
 
 const config = require('./config')
 
-process.send(config.get(process.argv[2], process.argv[3]))
+config.apply()
+
+const ret = config.get(process.argv[2], process.argv[3])
+
+console.debug(`[${process.ppid}:KEY] ${process.argv[3]} ${ret}`)
+
+process.send(ret)
 
 process.exit(0)

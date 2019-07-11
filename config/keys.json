@@ -1,0 +1,12 @@
+{
+  "cn": {
+    "server": "2jo-server",
+    "gateway": "2jo-gateway"
+  },
+  "passphrase": {
+    "server": "server",
+    "gateway": "gateway",
+    "device1": "device1",
+    "device2": "device2"
+  }
+}

@@ -8,6 +8,8 @@ const interactor = require('./interactor')
 
 const keystore = new Keystore('gateway', true)
 
+require('./config').apply()
+
 printGuide()
 interactor(onInput)
 
@@ -41,9 +43,9 @@ async function request(url) {
       certificate = certificate ? certificate : res.connection.getPeerCertificate()
 
       res.on('data', body => {
-        console.log(`[LCOAL CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
-        console.log(`[REMOTE CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
-        console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
+        console.debug(`[${process.ppid}:LCOAL_CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
+        console.debug(`[${process.ppid}:REMOTE_CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
+        console.log(`[${process.ppid}:REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
         console.log(`[RES:${url}] ${res.statusCode}\n${JSON.stringify(JSON.parse(body.toString()), null, 2)}`)
 
         resolve([res.statusCode, body, certificate])

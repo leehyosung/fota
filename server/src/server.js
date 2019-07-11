@@ -8,6 +8,8 @@ const bizlogic = require('./bizlogic')
 
 const keystore = new Keystore('server', true)
 
+require('./config').apply()
+
 run()
 
 async function run() {
@@ -19,9 +21,9 @@ async function run() {
     const cipher = req.connection.getCipher()
     const cert = req.connection.getPeerCertificate(true)
 
-    console.log(`[LCOAL CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`)
-    console.log(`[REMOTE CERT] ${cert.subject.CN} ${cert.fingerprint}`)
-    console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
+    console.debug(`[${process.ppid}:LCOAL_CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`)
+    console.debug(`[${process.ppid}:REMOTE_CERT] ${cert.subject.CN} ${cert.fingerprint}`)
+    console.log(`[${process.ppid}:REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
 
     try {
       switch (urlParsed.pathname) {
@@ -61,7 +63,7 @@ async function run() {
 }
 
 async function options() {
-  return {
+  const ret = {
     cert: await keystore.certificate(),
     key: await keystore.privateKey(),
 
@@ -74,6 +76,8 @@ async function options() {
     passphrase: await keystore.passphraseOfPrivateKey(),
     minVersion: 'TLSv1.3',
   }
+
+  return ret
 }
 
 function finalize(res, result) {
