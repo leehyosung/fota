@@ -21,8 +21,8 @@ async function run() {
     const cipher = req.connection.getCipher()
     const cert = req.connection.getPeerCertificate(true)
 
-    console.debug(`[PID:${process.ppid}|UID:${process.getuid()}|LCOAL_CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`)
-    console.debug(`[PID:${process.ppid}|UID:${process.getuid()}|REMOTE_CERT] ${cert.subject.CN} ${cert.fingerprint}`)
+    console.debug(`[PID:${process.pid}|UID:${process.getuid()}|LCOAL_CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`)
+    console.debug(`[PID:${process.pid}|UID:${process.getuid()}|REMOTE_CERT] ${cert.subject.CN} ${cert.fingerprint}`)
     console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
 
     try {
