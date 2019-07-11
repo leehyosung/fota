@@ -43,9 +43,9 @@ async function request(url) {
       certificate = certificate ? certificate : res.connection.getPeerCertificate()
 
       res.on('data', body => {
-        console.debug(`[${process.ppid}:LCOAL_CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
-        console.debug(`[${process.ppid}:REMOTE_CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
-        console.log(`[${process.ppid}:REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
+        console.debug(`[PID:${process.ppid}|UID:${process.getuid()}|LCOAL_CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
+        console.debug(`[PID:${process.ppid}|UID:${process.getuid()}|REMOTE_CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
+        console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
         console.log(`[RES:${url}] ${res.statusCode}\n${JSON.stringify(JSON.parse(body.toString()), null, 2)}`)
 
         resolve([res.statusCode, body, certificate])

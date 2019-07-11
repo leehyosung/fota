@@ -6,7 +6,7 @@ config.apply()
 
 const ret = config.get(process.argv[2], process.argv[3])
 
-console.debug(`[${process.ppid}:KEY] ${process.argv[3]} ${ret}`)
+console.debug(`[PID:${process.ppid}|UID:${process.getuid()}|KEY] ${process.argv[3]} ${ret}`)
 
 process.send(ret)
 

@@ -1,3 +1,4 @@
 {
-  "mode":"debug"
+  "mode":"debug",
+  "client":"device1"
 }
