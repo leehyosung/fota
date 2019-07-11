@@ -6,14 +6,14 @@ const url = require('url')
 const Keystore = require('./Keystore')
 const bizlogic = require('./bizlogic')
 
-const keystore = new Keystore('server', false)
+const keystore = new Keystore('server', true)
 
 run()
 
 async function run() {
   const port = 8443
 
-  https.createServer((await options()), (req, res) => {
+  https.createServer((await options()), async (req, res) => {
     const urlParsed = url.parse(req.url, true)
 
     const cipher = req.connection.getCipher()
@@ -30,13 +30,13 @@ async function run() {
           break
 
         case '/firmware':
-          finalize(res, bizlogic.firmware(urlParsed.query.version))
+          finalize(res, (await bizlogic.firmware(urlParsed.query.version)))
           break
 
         case '/':
           finalize(res, {
             statusCode: 200,
-            body: 'hello 2'
+            body: 'hello 2jo'
           })
           break
 

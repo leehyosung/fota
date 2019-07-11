@@ -6,7 +6,7 @@ const crypto = require('crypto')
 const Keystore = require('./Keystore')
 const interactor = require('./interactor')
 
-const keystore = new Keystore('gateway', false)
+const keystore = new Keystore('gateway', true)
 
 printGuide()
 interactor(onInput)

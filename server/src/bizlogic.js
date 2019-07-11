@@ -20,7 +20,7 @@ function version() {
   }
 }
 
-function firmware(requestVersion) {
+async function firmware(requestVersion) {
   const [version, firmwarePath] = firmwareInfo(requestVersion)
 
   let binary = firmwarePath ? fs.readFileSync(firmwarePath) : undefined
@@ -31,7 +31,7 @@ function firmware(requestVersion) {
       firmware: {
         version: version,
         data: binary ? binary.toString('base64') : '',
-        signature: binary ? signature(binary) : '',
+        signature: binary ? (await signature(binary)) : '',
       }
     }
   }
@@ -65,15 +65,15 @@ function firmwareInfo(requestVersion) {
   }
 }
 
-function signature(data) {
+async function signature(data) {
   const sign = crypto.createSign('SHA256')
 
   sign.write(data)
   sign.end()
 
   const privateKey = crypto.createPrivateKey({
-    key: keystore.privateKey(),
-    passphrase: keystore.passphraseOfPrivateKey()
+    key: await keystore.privateKey(),
+    passphrase: await keystore.passphraseOfPrivateKey()
   })
 
   return sign.sign(privateKey, 'base64')
