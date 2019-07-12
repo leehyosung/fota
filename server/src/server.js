@@ -6,8 +6,6 @@ const url = require('url')
 const Keystore = require('./Keystore')
 const bizlogic = require('./bizlogic')
 
-const keystore = new Keystore('server', true)
-
 require('./config').apply()
 
 run()
@@ -63,6 +61,8 @@ async function run() {
 }
 
 async function options() {
+  const keystore = new Keystore('server')
+
   const ret = {
     cert: await keystore.certificate(),
     key: await keystore.privateKey(),

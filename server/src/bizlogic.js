@@ -9,8 +9,6 @@ const Keystore = require('./Keystore')
 module.exports.version = version
 module.exports.firmware = firmware
 
-const keystore = new Keystore('server')
-
 function version() {
   return {
     statusCode: 200,
@@ -66,6 +64,8 @@ function firmwareInfo(requestVersion) {
 }
 
 async function signature(data) {
+  const keystore = new Keystore('server')
+
   const sign = crypto.createSign('SHA256')
 
   sign.write(data)

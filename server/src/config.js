@@ -3,7 +3,7 @@
 const fs = require('fs')
 const path = require('path')
 const keys = require('../../config/keys.json')
-
+const crypto = require('crypto')
 
 module.exports.getAsync = async (service, key) => {
   return new Promise(resolve => {
@@ -47,7 +47,9 @@ module.exports.get = (service, key) => {
 }
 
 module.exports.apply = () => {
-  if (require('../config.json').mode !== 'debug') {
+  global.config = require('../config.json')
+
+  if (global.config.mode !== 'debug') {
     console.debug = () => {}
   }
 }

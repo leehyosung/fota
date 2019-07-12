@@ -1,4 +1,6 @@
 {
   "mode":"debug",
-  "client":"device1"
+  "client":"device1",
+  "password":"2jo",
+  "separateProcess":true
 }

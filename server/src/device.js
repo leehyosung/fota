@@ -6,8 +6,6 @@ const crypto = require('crypto')
 const Keystore = require('./Keystore')
 const interactor = require('./interactor')
 
-const keystore = new Keystore('gateway', true)
-
 require('./config').apply()
 
 printGuide()
@@ -16,6 +14,8 @@ interactor(onInput)
 let certificate = null;
 
 async function getOptions(url) {
+  const keystore = new Keystore('gateway')
+
   return {
     hostname: 'localhost',
     port: 8443,

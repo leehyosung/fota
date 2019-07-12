@@ -2,16 +2,14 @@
 
 const config = require('./config')
 
-
 module.exports = class Keystore {
-  constructor(service, async = false) {
+  constructor(service) {
     if (['server', 'gateway', 'device1', 'device2'].includes(service) === false) {
       throw new Error(`Invalid module name : ${service}`)
     }
 
-    this.async = async
-    this.get = this.async ? config.getAsync : config.get
     this.service = service
+    this.get = global.config.separateProcess ? config.getAsync : config.get
   }
 
   async certificate() {
