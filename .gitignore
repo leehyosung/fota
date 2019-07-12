@@ -129,6 +129,7 @@ dmypy.json
 
 .vscode
 server/node_modules
+gateway/node_modules
 
 
 ### IntelliJ IDEA ###
