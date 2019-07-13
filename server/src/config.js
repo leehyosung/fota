@@ -6,11 +6,21 @@ const keys = require('../../config/keys.json')
 const crypto = require('crypto')
 
 module.exports.getAsync = async (service, key) => {
-  return new Promise(resolve => {
-    require('child_process').fork(path.join(__dirname, './keystoreExecutor.js'), [service, key])
-      .on('message', message => {
-        resolve(Buffer.from(message))
-      })
+  return new Promise((resolve, reject) => {
+    try {
+      const currentUserId = process.geteuid()
+
+      process.seteuid(0)
+
+      require('child_process').fork(path.join(__dirname, './keystoreExecutor.js'), [service, key], { uid: global.config.keystoreUserId })
+        .on('message', message => {
+          resolve(Buffer.from(message))
+        })
+
+      process.seteuid(currentUserId)
+    } catch (e) {
+      reject(e)
+    }
   })
 }
 

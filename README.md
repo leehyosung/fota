@@ -48,6 +48,10 @@
 
 ### How to install / run SOTA Server
 
+- `sudo chmod o+s /usr/bin/node` : Turn on seteuid(0) feature
+- `sudo useradd keystore` : Create keystore user
+- Modify keystoreUserId in `server/config.json`
+- `sudo chown -R keystore:keystore ./config ./cert && sudo chmod -R o-r ./config ./cert` : Set secrecy on files in ./config, ./cert 
 - `cd server` : Move to server directory
 - `npm install` : SOTA server install
 - `npm run server` : Run SOTA server

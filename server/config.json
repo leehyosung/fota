@@ -1,6 +1,6 @@
 {
   "mode":"debug",
-  "client":"device1",
-  "password":"2jo",
+  "keystoreUserId":1001,
+  "keystorePassword":"2jo",
   "separateProcess":true
 }
