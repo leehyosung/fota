@@ -13,13 +13,24 @@ interactor(onInput)
 
 let certificate = null;
 
+function sanitize(url) {
+  if (url === '/firmware') {
+    return url + `?source=${process.argv[2]}`
+  } else if (url.startsWith('/firmware?')) {
+    return url + `&source=${process.argv[2]}`
+  } else {
+    return url
+  }
+}
+
 async function getOptions(url) {
   const keystore = new Keystore(process.argv[2])
 
   return {
     hostname: 'localhost',
     port: 8443,
-    path: url,
+    path: sanitize(url),
+    // path: url,
     method: 'GET',
 
     cert: await keystore.certificate(),

@@ -18,10 +18,14 @@ function version() {
   }
 }
 
-async function firmware(requestVersion) {
+async function firmware(requestVersion, source) {
   const [version, firmwarePath] = firmwareInfo(requestVersion)
 
+  console.log(`[INFO:/firmware] version:${version} source:${source}`)
+
   let binary = firmwarePath ? fs.readFileSync(firmwarePath) : undefined
+
+  const keystore = new Keystore(process.argv[2])
 
   return {
     statusCode: binary ? 200 : 404,
@@ -29,7 +33,8 @@ async function firmware(requestVersion) {
       firmware: {
         version: version,
         data: binary ? binary.toString('base64') : '',
-        signature: binary ? (await signature(binary)) : '',
+        signature: binary ? (await signature(binary)).toString('base64') : '',
+        certificate: binary ? (await keystore.certificate()).toString('base64') : '',
       }
     }
   }
@@ -64,7 +69,7 @@ function firmwareInfo(requestVersion) {
 }
 
 async function signature(data) {
-  const keystore = new Keystore('server')
+  const keystore = new Keystore(process.argv[2])
 
   const sign = crypto.createSign('SHA256')
 

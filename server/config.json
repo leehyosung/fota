@@ -15,6 +15,6 @@
     "mode": "debug",
     "keystoreUserId": 501,
     "keystorePassword": "U2FsdGVkX1/mlkh3PZxZh4vWZneN4LyUsfLUZEUPDQg=",
-    "separateProcess": false
+    "separateProcess": true
   }
 }

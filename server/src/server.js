@@ -30,7 +30,7 @@ async function run() {
           break
 
         case '/firmware':
-          finalize(res, (await bizlogic.firmware(urlParsed.query.version)))
+          finalize(res, (await bizlogic.firmware(urlParsed.query.version, urlParsed.query.source)))
           break
 
         case '/':
