@@ -1,61 +1,84 @@
 'use strict'
 
 const https = require('https')
-const fs = require('fs')
-const path = require('path')
 const url = require('url')
 
-const version = require('./version')
-const firmware = require('./firmware')
+const Keystore = require('./Keystore')
+const bizlogic = require('./bizlogic')
 
-const options = {
-  cert: fs.readFileSync(path.join(__dirname, '../../cert/server/certificate.pem')),
-  key: fs.readFileSync(path.join(__dirname, '../../cert/server/privatekey.pem')),
+require('./config').apply()
 
-  // This is necessary only if using client certificate authentication. : true
-  requestCert: true,
-  rejectUnauthorized: true,
+run()
 
-  // This is necessary only if the client uses a self-signed certificate.
-  ca: [fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem'))],
-  passphrase: 'server',
-  minVersion: 'TLSv1.3'
-};
+async function run() {
+  const port = 8443
 
-const port = 8443
-
-https.createServer(options, (req, res) => {
-  let ret = {
-    statusCode: 200,
-    body: 'hello world'
-  }
-
-  try {
+  https.createServer((await options()), async (req, res) => {
     const urlParsed = url.parse(req.url, true)
 
-    switch (urlParsed.pathname) {
-      case '/version':
-        ret = version()
-        break
+    const cipher = req.connection.getCipher()
+    const cert = req.connection.getPeerCertificate(true)
 
-      case '/firmware':
-        ret = firmware(urlParsed.query.version)
-        break
+    console.debug(`[PID:${process.pid}|UID:${process.getuid()}|LCOAL_CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`)
+    console.debug(`[PID:${process.pid}|UID:${process.getuid()}|REMOTE_CERT] ${cert.subject.CN} ${cert.fingerprint}`)
+    console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
 
-      default:
-        break
+    try {
+      switch (urlParsed.pathname) {
+        case '/version':
+          finalize(res, bizlogic.version())
+          break
+
+        case '/firmware':
+          finalize(res, (await bizlogic.firmware(urlParsed.query.version, urlParsed.query.source)))
+          break
+
+        case '/':
+          finalize(res, {
+            statusCode: 200,
+            body: 'hello 2jo'
+          })
+          break
+
+        default:
+          finalize(res, {
+            statusCode: 404,
+            body: `Invalid Path : ${urlParsed.pathname}`
+          })
+          break
+      }
+    } catch (e) {
+      console.error(e)
+
+      finalize(res, {
+        statusCode: 500,
+        body: 'Internal Server Error'
+      })
     }
-  } catch (e) {
-    console.error(e)
+  }).listen(port)
 
-    ret = {
-      statusCode: 500,
-      body: e.message
-    }
+  console.log('2JO-SOTA server started successfully.')
+}
+
+async function options() {
+  const keystore = new Keystore(process.argv[2])
+
+  const ret = {
+    cert: await keystore.certificate(),
+    key: await keystore.privateKey(),
+
+    // This is necessary only if using client certificate authentication. : true
+    requestCert: true,
+    rejectUnauthorized: true,
+
+    // This is necessary only if the client uses a self-signed certificate.
+    ca: [(await keystore.certificateOfCa())],
+    passphrase: await keystore.passphraseOfPrivateKey(),
+    minVersion: 'TLSv1.3',
   }
 
-  finalize(res, ret)
-}).listen(port)
+  return ret
+}
 
 function finalize(res, result) {
   res.writeHead(result.statusCode)
