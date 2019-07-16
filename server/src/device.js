@@ -1,42 +1,61 @@
 'use strict'
 
-const fs = require('fs')
 const https = require('https')
-const path = require('path')
 const crypto = require('crypto')
 
+const Keystore = require('./Keystore')
 const interactor = require('./interactor')
+
+require('./config').apply()
 
 printGuide()
 interactor(onInput)
 
 let certificate = null;
 
+function sanitize(url) {
+  if (url === '/firmware') {
+    return url + `?source=${process.argv[2]}`
+  } else if (url.startsWith('/firmware?')) {
+    return url + `&source=${process.argv[2]}`
+  } else {
+    return url
+  }
+}
+
+async function getOptions(url) {
+  const keystore = new Keystore(process.argv[2])
+
+  return {
+    hostname: 'localhost',
+    port: 8443,
+    path: sanitize(url),
+    // path: url,
+    method: 'GET',
+
+    cert: await keystore.certificate(),
+    key: await keystore.privateKey(),
+    ca: await keystore.certificateOfCa(),
+    passphrase: await keystore.passphraseOfPrivateKey(),
+
+    servername: await keystore.peerCommonName(), //Should be the same with server certificate's CN
+
+    rejectUnauthorized: true,
+  }
+}
+
 async function request(url) {
+  const options = await getOptions(url)
+
   return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'localhost',
-      port: 8443,
-      path: url,
-      method: 'GET',
-
-      cert: fs.readFileSync(path.join(__dirname, '../../cert/device1/certificate.pem')),
-      key: fs.readFileSync(path.join(__dirname, '../../cert/device1/privatekey.pem')),
-      ca: fs.readFileSync(path.join(__dirname, '../../cert/ca/certificate.pem')),
-      passphrase: 'device1',
-      servername: '2jo-server', //Should be the same with server certificate's CN
-
-      rejectUnauthorized: true,
-    }
-
     https.request(options, res => {
       const cipher = res.connection.getCipher()
 
       certificate = certificate ? certificate : res.connection.getPeerCertificate()
 
       res.on('data', body => {
-        console.log(`[LCOAL CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
-        console.log(`[REMOTE CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
+        console.debug(`[PID:${process.pid}|UID:${process.getuid()}|LCOAL_CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
+        console.debug(`[PID:${process.pid}|UID:${process.getuid()}|REMOTE_CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
         console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
         console.log(`[RES:${url}] ${res.statusCode}\n${JSON.stringify(JSON.parse(body.toString()), null, 2)}`)
 

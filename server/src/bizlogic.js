@@ -4,7 +4,7 @@ const fs = require('fs')
 const crypto = require('crypto')
 const path = require('path')
 
-const keystore = require('./keystore')
+const Keystore = require('./Keystore')
 
 module.exports.version = version
 module.exports.firmware = firmware
@@ -18,10 +18,14 @@ function version() {
   }
 }
 
-function firmware(requestVersion) {
+async function firmware(requestVersion, source) {
   const [version, firmwarePath] = firmwareInfo(requestVersion)
 
+  console.log(`[INFO:/firmware] version:${version} source:${source}`)
+
   let binary = firmwarePath ? fs.readFileSync(firmwarePath) : undefined
+
+  const keystore = new Keystore(process.argv[2])
 
   return {
     statusCode: binary ? 200 : 404,
@@ -29,7 +33,8 @@ function firmware(requestVersion) {
       firmware: {
         version: version,
         data: binary ? binary.toString('base64') : '',
-        signature: binary ? signature(binary) : '',
+        signature: binary ? (await signature(binary)).toString('base64') : '',
+        certificate: binary ? (await keystore.certificate()).toString('base64') : '',
       }
     }
   }
@@ -63,15 +68,17 @@ function firmwareInfo(requestVersion) {
   }
 }
 
-function signature(data) {
+async function signature(data) {
+  const keystore = new Keystore(process.argv[2])
+
   const sign = crypto.createSign('SHA256')
 
   sign.write(data)
   sign.end()
 
   const privateKey = crypto.createPrivateKey({
-    key: keystore.privateKey(),
-    passphrase: keystore.passphraseOfPrivateKey()
+    key: await keystore.privateKey(),
+    passphrase: await keystore.passphraseOfPrivateKey()
   })
 
   return sign.sign(privateKey, 'base64')

@@ -1,0 +1,20 @@
+{
+  "server": {
+    "mode": "debug",
+    "keystoreUserId": 501,
+    "keystorePassword": "U2FsdGVkX1/ZVlTjL/ZbJ8nX4eBesHhnwrBhnzb8clY=",
+    "separateProcess": true
+  },
+  "gateway": {
+    "mode": "debug",
+    "keystoreUserId": 501,
+    "keystorePassword": "U2FsdGVkX182FSwGocG6CtHYxlvfO2h+uWZwzS16qts=",
+    "separateProcess": true
+  },
+  "device": {
+    "mode": "debug",
+    "keystoreUserId": 501,
+    "keystorePassword": "U2FsdGVkX1/mlkh3PZxZh4vWZneN4LyUsfLUZEUPDQg=",
+    "separateProcess": true
+  }
+}

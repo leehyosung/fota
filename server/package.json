@@ -7,7 +7,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "server": "node ./src/server.js",
-    "device": "node ./src/device.js"
+    "server": "node ./src/server.js server",
+    "gateway:d": "node ./src/device.js gateway",
+    "gateway:s": "node ./src/server.js gateway",
+    "device": "node ./src/device.js device"
   }
 }
