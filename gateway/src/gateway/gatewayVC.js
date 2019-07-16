@@ -1,11 +1,9 @@
 'use strict'
 
-const fs = require('fs');
-const https = require('https');
-const path = require('path');
 const crypto = require('crypto');
 const bizlogic = require('../bizlogic');
 
+const Keystore = require('../Keystore');
 const interactor = require('../interactor');
 
 module.exports.startVC = startVC;
@@ -41,8 +39,6 @@ async function onInput(input) {
             const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), certificate);
 
             console.log(`\nresult of signature verification : ${resultOfVerification}`);
-
-            fs.writeFileSync('../firmware/updateInfo.txt', JSON.stringify({version : res.firmware.version, signature : res.firmware.signature}) , 'utf8');
         }
     }
 

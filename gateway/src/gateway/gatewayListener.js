@@ -1,78 +1,87 @@
 'use strict'
 
 const https = require('https');
-const fs = require('fs');
-const path = require('path');
 const url = require('url');
 
-const keystore = require('../keystore');
+const Keystore = require('../Keystore');
 const bizlogic = require('../bizlogic');
 const vc = require('./gatewayVC');
 
+require('../config').apply();
+
+//start version check
 vc.startVC();
 
-const port = 9443;
+run();
 
-const options = {
-    cert: keystore.certificate(),
-    key: keystore.privateKey(),
+async function run() {
+    const port = 9443;
 
-    // This is necessary only if using client certificate authentication. : true
-    requestCert: true,
-    rejectUnauthorized: true,
+    https.createServer((await options()), async (req, res) => {
+        const urlParsed = url.parse(req.url, true);
 
-    // This is necessary only if the client uses a self-signed certificate.
-    ca: [keystore.certificateOfCa()],
-    passphrase: keystore.passphraseOfPrivateKey(),
-    minVersion: 'TLSv1.3',
-};
+        const cipher = req.connection.getCipher();
+        const cert = req.connection.getPeerCertificate(true);
 
-https.createServer(options, async (req, res) => {
-    const urlParsed = url.parse(req.url, true);
+        console.debug(`[PID:${process.pid}|UID:${process.getuid()}|LCOAL_CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`);
+        console.debug(`[PID:${process.pid}|UID:${process.getuid()}|REMOTE_CERT] ${cert.subject.CN} ${cert.fingerprint}`);
+        console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`);
 
-    const cipher = req.connection.getCipher();
-    const cert = req.connection.getPeerCertificate(true);
+        try {
+            switch (urlParsed.pathname) {
+                case '/version':
+                    const response = await bizlogic.version(req.url);
+                    finalize2(res, response);
+                    break;
 
-    console.log(`[LCOAL CERT] ${req.connection.getCertificate().subject.CN} ${req.connection.getCertificate().fingerprint}`);
-    console.log(`[REMOTE CERT] ${cert.subject.CN} ${cert.fingerprint}`);
-    console.log(`[REQ:${urlParsed.pathname}] ${req.connection.remoteAddress} ${cipher.version} ${cipher.name}`);
+                case '/firmware':
+                    finalize(res, await bizlogic.firmware(req.url));
+                    break;
 
-    try {
-        switch (urlParsed.pathname) {
-            case '/version':
-                const response = await bizlogic.version(req.url);
-                finalize2(res, response);
-                break;
+                case '/':
+                    finalize(res, {
+                        statusCode: 200,
+                        body: 'hello 2'
+                    });
+                    break;
 
-            case '/firmware':
-                finalize(res, await bizlogic.firmware(req.url));
-                break;
+                default:
+                    finalize(res, {
+                        statusCode: 404,
+                        body: `Invalid Path : ${urlParsed.pathname}`
+                    });
+                    break
+            }
+        } catch (e) {
+            console.error(e);
 
-            case '/':
-                finalize(res, {
-                    statusCode: 200,
-                    body: 'hello 2'
-                });
-                break;
-
-            default:
-                finalize(res, {
-                    statusCode: 404,
-                    body: `Invalid Path : ${urlParsed.pathname}`
-                });
-                break
+            finalize(res, {
+                statusCode: 500,
+                body: 'Internal Server Error'
+            })
         }
-    } catch (e) {
-        console.error(e);
+    }).listen(port);
+}
 
-        finalize(res, {
-            statusCode: 500,
-            body: 'Internal Server Error'
-        })
-    }
-}).listen(port);
+async function options() {
+    const keystore = new Keystore(process.argv[2]);
 
-console.log('2JO-SOTA gateway started successfully.');
+    const ret = {
+        cert: await keystore.certificate(),
+        key: await keystore.privateKey(),
+
+        // This is necessary only if using client certificate authentication. : true
+        requestCert: true,
+        rejectUnauthorized: true,
+
+        // This is necessary only if the client uses a self-signed certificate.
+        ca: [(await keystore.certificateOfCa())],
+        passphrase: await keystore.passphraseOfPrivateKey(),
+        minVersion: 'TLSv1.3',
+    };
+
+    return ret
+}
 
 function finalize(res, result) {
     res.writeHead(result.statusCode);
