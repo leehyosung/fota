@@ -33,8 +33,8 @@ async function firmware(requestVersion, source) {
       firmware: {
         version: version,
         data: binary ? binary.toString('base64') : '',
-        signature: binary ? (await signature(binary)).toString('base64') : '',
-        certificate: binary ? (await keystore.certificate()).toString('base64') : '',
+        signature: binary ? (await signature(binary)).toString() : '',
+        certificate: binary ? (await keystore.certificate()).toString() : '',
       }
     }
   }
