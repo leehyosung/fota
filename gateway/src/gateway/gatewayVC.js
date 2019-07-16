@@ -2,9 +2,14 @@
 
 const crypto = require('crypto');
 const bizlogic = require('../bizlogic');
+const fs = require('fs');
+const fsutil = require('../fsutil');
+const path = require('path');
 
 const Keystore = require('../Keystore');
 const interactor = require('../interactor');
+
+require('../config').apply();
 
 const pki = require('node-forge').pki;
 
@@ -29,13 +34,15 @@ function printGuide() {
     console.log(msg)
 }
 
+let downloadFilePath = null;
+
 async function onInput(input) {
     input = input.toLowerCase();
 
     if (validate(input) === false) {
         console.log(`Invalid input! : ${input}`)
     } else {
-        let [statusCode, body, certificate] = await bizlogic.request('/' + input);
+        let [statusCode, body] = await bizlogic.request('/' + input);
 
         if (statusCode === 200 && input.startsWith('firmware')) {
             //firmware 요청일 경우
@@ -43,12 +50,15 @@ async function onInput(input) {
             const resultOfVerification = res.firmware.data === '' ? 'N/A' : await verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), res.firmware.certificate);
 
             console.log(`\nresult of signature verification : ${resultOfVerification}`);
+
+            downloadFilePath = save(res.firmware.version, res.firmware.data);
+
+            console.log(`Downloaded firmware saved in '${downloadFilePath}`);
         }
     }
 
     printGuide();
 }
-
 
 async function verify(signature, binary, certificate) {
     const server_cert = pki.certificateFromPem(certificate);
@@ -92,4 +102,21 @@ async function verify_certificate(server_cert) {
 function validate(input) {
     // TODO : validation code
     return true
+}
+
+function save(version, dataOfbase64) {
+    const dir = path.join(__dirname, `../../downloaded`);
+
+    if (fs.existsSync(dir)) {
+        fsutil.rmdir(dir)
+    }
+
+    fs.mkdirSync(dir);
+
+    const filepath = path.join(dir, `/firmware.${version}`);
+    fs.writeFileSync(filepath, dataOfbase64, 'base64');
+
+    fs.chmodSync(filepath, '744');
+
+    return filepath;
 }

@@ -13,15 +13,18 @@ module.exports.request = request;
 
 
 async function version(url) {
-  let [statusCode, body, certificate] = await request(url);
+  let [statusCode, body] = await request(url);
+  const body_parsed = JSON.parse(body.toString());
   return {
     statusCode: statusCode,
-    body: body.toString()
+    body: {
+      version: body_parsed.version,
+    }
   }
 }
 
 async function firmware(url) {
-  let [statusCode, body, certificate] = await request(url);
+  let [statusCode, body] = await request(url);
 
   const body_parsed = JSON.parse(body.toString());
   const version = body_parsed.firmware.version;
@@ -43,9 +46,9 @@ async function firmware(url) {
 }
 
 function sanitize(url) {
-  if (url === '/firmware') {
+  if (url === '/firmware' && !url.includes( 'source' )) {
     return url + `?source=${process.argv[2]}`
-  } else if (url.startsWith('/firmware?')) {
+  } else if (url.startsWith('/firmware?') && !url.includes( 'source' )) {
     return url + `&source=${process.argv[2]}`
   } else {
     return url
@@ -83,8 +86,7 @@ async function request(url) {
      https.request(options, res => {
       const cipher = res.connection.getCipher();
 
-
-       certificate = certificate ? certificate : res.connection.getPeerCertificate();
+      certificate = certificate ? certificate : res.connection.getPeerCertificate();
 
       res.on('data', body => {
         console.debug(`[PID:${process.pid}|UID:${process.getuid()}|LCOAL_CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`);
@@ -92,7 +94,7 @@ async function request(url) {
         console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`);
         console.log(`[RES:${url}] ${res.statusCode}\n${JSON.stringify(JSON.parse(body.toString()), null, 2)}`);
 
-        resolve([res.statusCode, body, certificate]);
+        resolve([res.statusCode, body]);
       })
     }).on('error', e => {
       reject(e)

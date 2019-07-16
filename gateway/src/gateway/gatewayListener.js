@@ -15,7 +15,7 @@ vc.startVC();
 run();
 
 async function run() {
-    const port = 9443;
+    const port = 9443; //TODO 포트 정보 업데이트
 
     https.createServer((await options()), async (req, res) => {
         const urlParsed = url.parse(req.url, true);
@@ -31,7 +31,7 @@ async function run() {
             switch (urlParsed.pathname) {
                 case '/version':
                     const response = await bizlogic.version(req.url);
-                    finalize2(res, response);
+                    finalize(res, response);
                     break;
 
                 case '/firmware':
@@ -61,12 +61,15 @@ async function run() {
             })
         }
     }).listen(port);
+
+    console.log('2JO-SOTA gateway started successfully.')
+
 }
 
 async function options() {
     const keystore = new Keystore(process.argv[2]);
 
-    const ret = {
+    return {
         cert: await keystore.certificate(),
         key: await keystore.privateKey(),
 
@@ -79,17 +82,9 @@ async function options() {
         passphrase: await keystore.passphraseOfPrivateKey(),
         minVersion: 'TLSv1.3',
     };
-
-    return ret
 }
 
 function finalize(res, result) {
     res.writeHead(result.statusCode);
     res.end(JSON.stringify(result.body));
-}
-
-//TODO 정리 필요
-function finalize2(res, result) {
-    res.writeHead(result.statusCode);
-    res.end(result.body);
 }
