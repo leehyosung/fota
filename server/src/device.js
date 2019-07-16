@@ -2,7 +2,10 @@
 
 const https = require('https')
 const crypto = require('crypto')
+const fs = require('fs')
+const path = require('path')
 
+const fsutil = require('./fsutil')
 const Keystore = require('./Keystore')
 const interactor = require('./interactor')
 
@@ -12,6 +15,7 @@ printGuide()
 interactor(onInput)
 
 let certificate = null;
+let downloadFilePath = null;
 
 function sanitize(url) {
   if (url === '/firmware') {
@@ -92,7 +96,11 @@ async function onInput(input) {
 
       const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), certificate)
 
-      console.log(`\nresult of signature verification : ${resultOfVerification}`)
+      console.log(`\nResult of signature verification : ${resultOfVerification}`)
+
+      downloadFilePath = save(res.firmware.version, res.firmware.data)
+
+      console.log(`Downloaded firmware saved in '${downloadFilePath}`)
     }
   }
 
@@ -116,4 +124,21 @@ function verify(signature, binary) {
 function validate(input) {
   // TODO : validation code
   return true
+}
+
+function save(version, dataOfbase64) {
+  const dir = path.join(__dirname, `../../downloaded`)
+
+  if (fs.existsSync(dir)) {
+    fsutil.rmdir(dir)
+  }
+
+  fs.mkdirSync(dir)
+
+  const filepath = path.join(dir, `/firmware.${version}`)
+  fs.writeFileSync(filepath, dataOfbase64, 'base64')
+
+  fs.chmodSync(filepath, '744')
+
+  return filepath
 }
