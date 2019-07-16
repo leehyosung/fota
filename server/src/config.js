@@ -2,17 +2,21 @@
 
 const fs = require('fs')
 const path = require('path')
-const keys = require('../../config/keys.json')
 const crypto = require('crypto')
 
-module.exports.getAsync = async (service, key) => {
+const keys = require('../../config/keys.json')
+const crypt = require('./crypt')
+
+module.exports.getAsync = async (service, key, passphrase) => {
   return new Promise((resolve, reject) => {
     try {
       const currentUserId = process.geteuid()
 
-      process.seteuid(0)
+      process.seteuid(global.config.keystoreUserId)
 
-      require('child_process').fork(path.join(__dirname, './keystoreExecutor.js'), [service, key], { uid: global.config.keystoreUserId })
+      require('child_process').fork(path.join(__dirname, './keystoreExecutor.js'), [service, key, passphrase], {
+          uid: global.config.keystoreUserId
+        })
         .on('message', message => {
           resolve(Buffer.from(message))
         })
@@ -24,28 +28,26 @@ module.exports.getAsync = async (service, key) => {
   })
 }
 
-module.exports.get = (service, key) => {
+module.exports.get = (service, key, passphrase) => {
   switch (key) {
     case 'certificate':
-      return fs.readFileSync(path.join(__dirname, `../../cert/${service}/certificate.pem`))
+      return crypt.decrypt(fs.readFileSync(path.join(__dirname, `../../cert/${service}/certificate.pem.enc`)).toString('utf8'), passphrase)
 
     case 'privateKey':
-      return fs.readFileSync(path.join(__dirname, `../../cert/${service}/privatekey.pem`))
+      return crypt.decrypt(fs.readFileSync(path.join(__dirname, `../../cert/${service}/privatekey.pem.enc`)).toString('utf8'), passphrase)
 
     case 'certificateOfCa':
       return fs.readFileSync(path.join(__dirname, `../../cert/ca/certificate.pem`))
 
     case 'passphraseOfPrivateKey':
-      return keys.passphrase[service]
+      return crypt.decrypt(keys[service]['passphraseOfPrivateKey'], passphrase)
 
     case 'peerCommonName':
       switch (service) {
         case 'gateway':
-          return keys.cn['server']
-        case 'device1':
-          return keys.cn['gateway']
-        case 'device2':
-          return keys.cn['gateway']
+          return crypt.decrypt(keys['server']['commonName'], passphrase)
+        case 'device':
+          return crypt.decrypt(keys['gateway']['commonName'], passphrase)
         default:
           throw new Error(`Invalid service name : ${service}`)
       }
@@ -57,7 +59,7 @@ module.exports.get = (service, key) => {
 }
 
 module.exports.apply = () => {
-  global.config = require('../config.json')
+  global.config = require('../config.json')[process.argv[2]]
 
   if (global.config.mode !== 'debug') {
     console.debug = () => {}

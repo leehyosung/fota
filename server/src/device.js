@@ -14,7 +14,7 @@ interactor(onInput)
 let certificate = null;
 
 async function getOptions(url) {
-  const keystore = new Keystore('gateway')
+  const keystore = new Keystore(process.argv[2])
 
   return {
     hostname: 'localhost',

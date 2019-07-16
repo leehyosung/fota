@@ -4,9 +4,17 @@ const config = require('./config')
 
 config.apply()
 
-const ret = config.get(process.argv[2], process.argv[3])
+const service = process.argv[2]
+const key = process.argv[3]
+const passphrase = process.argv[4]
 
-console.debug(`[PID:${process.pid}|PPID:${process.ppid}|UID:${process.getuid()}|KEY] ${process.argv[3]} ${ret}`)
+// console.debug(`service : ${service} | key : ${key} | passphrase : ${passphrase}`)
+
+let ret = config.get(service, key, passphrase)
+
+// console.log(`ret : ${ret}`)
+
+console.debug(`[PID:${process.pid}|PPID:${process.ppid}|UID:${process.getuid()}|KEY] ${key} ${ret}`)
 
 process.send(ret)
 

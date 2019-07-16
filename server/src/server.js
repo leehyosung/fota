@@ -10,7 +10,6 @@ require('./config').apply()
 
 run()
 
-
 async function run() {
   const port = 8443
 
@@ -62,7 +61,7 @@ async function run() {
 }
 
 async function options() {
-  const keystore = new Keystore('server')
+  const keystore = new Keystore(process.argv[2])
 
   const ret = {
     cert: await keystore.certificate(),

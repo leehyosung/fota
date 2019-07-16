@@ -1,12 +1,14 @@
 {
-  "cn": {
-    "server": "2jo-server",
-    "gateway": "2jo-gateway"
+  "server": {
+    "commonName": "ty130/AIAg+HZTQ1tLT3LQ==",
+    "passphraseOfPrivateKey": "DaDj1EwaAg5SG7BYJgZoJQ=="
   },
-  "passphrase": {
-    "server": "server",
-    "gateway": "gateway",
-    "device1": "device1",
-    "device2": "device2"
+  "gateway": {
+    "commonName": "Uw8Dax8O58GjNL3Q2GOGtw==",
+    "passphraseOfPrivateKey": "1JyzQWUcAWih1Bp7zAPK2w=="
+  },
+  "device": {
+    "commonName": null,
+    "passphraseOfPrivateKey": "YUG7d8Mf/f7RAXwUJdPIbg=="
   }
 }
