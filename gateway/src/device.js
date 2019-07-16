@@ -52,13 +52,10 @@ async function request(url) {
       const cipher = res.connection.getCipher();
 
       res.on('data', body => {
-        let res_cert = JSON.parse(body.toString()).firmware ? JSON.parse(body.toString()).firmware.certificate : undefined;
-        // certificate = res_cert ? Buffer.from(res_cert, 'base64') : undefined;
-        //TODO certificate 생성
-        certificate = res_cert ? eval(res_cert) : undefined;
+        certificate = certificate ? certificate : res.connection.getPeerCertificate();
 
-        // console.debug(`[PID:${process.pid}|UID:${process.getuid()}|LCOAL_CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`);
-        // console.debug(`[PID:${process.pid}|UID:${process.getuid()}|REMOTE_CERT] ${certificate.subject.CN} ${certificate.fingerprint}`);
+        console.debug(`[PID:${process.pid}|UID:${process.getuid()}|LCOAL_CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`);
+        console.debug(`[PID:${process.pid}|UID:${process.getuid()}|REMOTE_CERT] ${certificate.subject.CN} ${certificate.fingerprint}`);
         console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`);
         console.log(`[RES:${url}] ${res.statusCode}\n${body.toString()}`);
 
@@ -84,7 +81,7 @@ function printGuide() {
 }
 
 async function onInput(input) {
-  input = input.toLowerCase()
+  input = input.toLowerCase();
 
   if (validate(input) === false) {
     console.log(`Invalid input! : ${input}`)
@@ -94,7 +91,7 @@ async function onInput(input) {
     if (statusCode === 200 && input.startsWith('firmware')) {
       const res = JSON.parse(body)
 
-      const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), certificate);
+      const resultOfVerification = res.firmware.data === '' ? 'N/A' : await verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), res.firmware.certificate);
 
       console.log(`\nresult of signature verification : ${resultOfVerification}`)
     }
@@ -103,20 +100,42 @@ async function onInput(input) {
   printGuide()
 }
 
-//Device publickey는 server public key 사용 해야함
-function verify(signature, binary, certificate) {
+async function verify(signature, binary, certificate) {
+  const server_cert = pki.certificateFromPem(certificate);
+  const check_cert = await verify_certificate(server_cert);
+
+  if(!check_cert) {
+    console.log('invalid signature ');
+    throw new Error(`Invalid Signature `);
+  }
+
   const verify = crypto.createVerify('SHA256');
   verify.update(binary);
   verify.end();
 
+  const publicKeyPem = pki.publicKeyToPem(server_cert.publicKey);
+
   const publicKey = {
-    // key: certificate,
-    key: certificate.pubkey,
-    format: 'der',
+    key: publicKeyPem.toString(),
+    format: 'pem',
     type: 'spki'
   };
 
   return verify.verify(crypto.createPublicKey(publicKey), signature, 'base64');
+}
+
+//certificate 유효성 체크
+async function verify_certificate(server_cert) {
+  try {
+    const keystore = new Keystore(process.argv[2]);
+    const ca_cert_pem = await keystore.certificateOfCa();
+
+    const ca_cert = pki.certificateFromPem(ca_cert_pem);
+
+    return ca_cert.verify(server_cert);
+  } catch (e) {
+    console.debug('error ' + e.toString())
+  }
 }
 
 function validate(input) {
