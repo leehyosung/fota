@@ -4,11 +4,11 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const crypto = require('crypto');
+const bizlogic = require('../bizlogic');
 
 const interactor = require('../interactor');
 
 module.exports.startVC = startVC;
-module.exports.getCert = getCert;
 
 //version checker
 function startVC(){
@@ -28,57 +28,13 @@ function printGuide() {
     console.log(msg)
 }
 
-let certificate = null;
-
-function getCert(){
-    return certificate;
-}
-
-async function request(url) {
-    return new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'localhost',
-            port: 8443,
-            path: url,
-            method: 'GET',
-
-            cert: fs.readFileSync(path.join(__dirname, '../../../cert/gateway/certificate.pem')),
-            key: fs.readFileSync(path.join(__dirname, '../../../cert/gateway/privatekey.pem')),
-            ca: fs.readFileSync(path.join(__dirname, '../../../cert/ca/certificate.pem')),
-            passphrase: 'gateway',
-            servername: '2jo-server', //Should be the same with server certificate's CN
-
-            rejectUnauthorized: true,
-        };
-
-        https.request(options, res => {
-            const cipher = res.connection.getCipher();
-
-
-            certificate = certificate ? certificate : res.connection.getPeerCertificate();
-
-            res.on('data', body => {
-                console.log(`[LCOAL CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`);
-                console.log(`[REMOTE CERT] ${certificate.subject.CN} ${certificate.fingerprint}`);
-                console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`);
-                console.log(`[RES:${url}] ${res.statusCode} ${body.toString()}`);
-
-                resolve([res.statusCode, body]);
-            })
-        }).on('error', e => {
-            reject(e)
-        }).end()
-    })
-
-}
-
 async function onInput(input) {
     input = input.toLowerCase();
 
     if (validate(input) === false) {
         console.log(`Invalid input! : ${input}`)
     } else {
-        let [statusCode, body] = await request('/' + input);
+        let [statusCode, body, certificate] = await bizlogic.request('/' + input);
 
         if (statusCode === 200 && input.startsWith('firmware')) {
             const res = JSON.parse(body);
@@ -94,7 +50,7 @@ async function onInput(input) {
 }
 
 
-function verify(signature, binary) {
+function verify(signature, binary, certificate) {
     const verify = crypto.createVerify('SHA256');
     verify.update(binary);
     verify.end();
