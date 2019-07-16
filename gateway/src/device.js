@@ -1,15 +1,14 @@
 'use strict'
 
-const fs = require('fs')
-const https = require('https')
-const path = require('path')
-const crypto = require('crypto')
+const fs = require('fs');
+const https = require('https');
+const path = require('path');
+const crypto = require('crypto');
 
-const interactor = require('./interactor')
-const gateway_vc = require('./gateway/gatewayVC');
+const interactor = require('./interactor');
 
-printGuide()
-interactor(onInput)
+printGuide();
+interactor(onInput);
 
 let certificate = null;
 
@@ -28,20 +27,20 @@ async function request(url) {
       servername: '2jo-gateway', //Should be the same with server certificate's CN
 
       rejectUnauthorized: true,
-    }
+    };
 
     https.request(options, res => {
-      const cipher = res.connection.getCipher()
-
-      // certificate = certificate ? certificate : res.connection.getPeerCertificate()
-      // certificate = fs.readFileSync(path.join(__dirname, '../../cert/server/certificate.pem'));
-      certificate = gateway_vc.getCert();
+      const cipher = res.connection.getCipher();
 
       res.on('data', body => {
-        console.log(`[LCOAL CERT] ${res.connection.getCertificate().subject.CN} ${res.connection.getCertificate().fingerprint}`)
-        console.log(`[REMOTE CERT] ${certificate.subject.CN} ${certificate.fingerprint}`)
-        console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`)
-        console.log(`[RES:${url}] ${res.statusCode}\n${JSON.stringify(JSON.parse(body.toString()), null, 2)}`)
+        let res_cert = JSON.parse(body.toString()).firmware ? JSON.parse(body.toString()).firmware.certificate : undefined;
+        // certificate = res_cert ? Buffer.from(res_cert, 'base64') : undefined;
+        //TODO certificate 생성
+        certificate = res_cert ? eval(res_cert) : undefined;
+
+        console.log(`[REQ:${url}] ${res.connection.remoteAddress} ${cipher.version} ${cipher.name}`);
+        console.log(`[RES:${url}] ${res.statusCode}\n${body.toString()}`);
+
 
         resolve([res.statusCode, body, certificate])
       })
@@ -69,12 +68,12 @@ async function onInput(input) {
   if (validate(input) === false) {
     console.log(`Invalid input! : ${input}`)
   } else {
-    let [statusCode, body, certificate] = await request('/' + input)
+    let [statusCode, body, certificate] = await request('/' + input);
 
     if (statusCode === 200 && input.startsWith('firmware')) {
       const res = JSON.parse(body)
 
-      const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), certificate)
+      const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), certificate);
 
       console.log(`\nresult of signature verification : ${resultOfVerification}`)
     }
@@ -84,14 +83,14 @@ async function onInput(input) {
 }
 
 //Device publickey는 server public key 사용 해야함
-function verify(signature, binary) {
+function verify(signature, binary, certificate) {
   const verify = crypto.createVerify('SHA256');
   verify.update(binary);
   verify.end();
 
   const publicKey = {
-    // key: certificate.pubkey,
-    key: certificate,
+    // key: certificate,
+    key: certificate.pubkey,
     format: 'der',
     type: 'spki'
   }

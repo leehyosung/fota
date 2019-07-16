@@ -27,7 +27,7 @@ const options = {
     minVersion: 'TLSv1.3',
 };
 
-https.createServer(options, (req, res) => {
+https.createServer(options, async (req, res) => {
     const urlParsed = url.parse(req.url, true);
 
     const cipher = req.connection.getCipher();
@@ -40,11 +40,12 @@ https.createServer(options, (req, res) => {
     try {
         switch (urlParsed.pathname) {
             case '/version':
-                finalize(res, bizlogic.version());
+                const response = await bizlogic.version(req.url);
+                finalize2(res, response);
                 break;
 
             case '/firmware':
-                finalize(res, bizlogic.firmware(urlParsed.query.version));
+                finalize(res, await bizlogic.firmware(req.url));
                 break;
 
             case '/':
@@ -76,4 +77,10 @@ console.log('2JO-SOTA gateway started successfully.');
 function finalize(res, result) {
     res.writeHead(result.statusCode);
     res.end(JSON.stringify(result.body));
+}
+
+//TODO 정리 필요
+function finalize2(res, result) {
+    res.writeHead(result.statusCode);
+    res.end(result.body);
 }
