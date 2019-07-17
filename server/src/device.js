@@ -129,6 +129,10 @@ function validate(input) {
 function save(version, dataOfbase64) {
   const dir = path.join(__dirname, `../../downloaded`)
 
+  const currentUserId = process.geteuid()
+
+  process.seteuid(0)
+
   if (fs.existsSync(dir)) {
     fsutil.rmdir(dir)
   }
@@ -138,7 +142,9 @@ function save(version, dataOfbase64) {
   const filepath = path.join(dir, `/firmware.${version}`)
   fs.writeFileSync(filepath, dataOfbase64, 'base64')
 
-  fs.chmodSync(filepath, '744')
+  fs.chmodSync(filepath, '711')
+
+  process.seteuid(currentUserId)
 
   return filepath
 }
