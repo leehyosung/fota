@@ -94,7 +94,7 @@ async function onInput(input) {
     if (statusCode === 200 && input.startsWith('firmware')) {
       const res = JSON.parse(body)
 
-      const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), certificate)
+      const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, res.firmware.data, certificate)
 
       console.log(`\nResult of signature verification : ${resultOfVerification}`)
 
