@@ -5,6 +5,7 @@ const crypto = require('crypto')
 const path = require('path')
 
 const Keystore = require('./Keystore')
+const crypt = require('./crypt')
 
 module.exports.version = version
 module.exports.firmware = firmware
@@ -23,16 +24,21 @@ async function firmware(requestVersion, source) {
 
   console.log(`[INFO:/firmware] version:${version} source:${source}`)
 
-  let binary = firmwarePath ? fs.readFileSync(firmwarePath) : undefined
-
   const keystore = new Keystore(process.argv[2])
+
+  let binary = firmwarePath ? fs.readFileSync(firmwarePath).toString() : undefined
+  if (binary) {
+    const passphrase = await keystore.passphraseOfPrivateKey()
+
+    binary = crypt.decrypt(binary, passphrase)
+  }
 
   return {
     statusCode: binary ? 200 : 404,
     body: {
       firmware: {
         version: version,
-        data: binary ? binary.toString('base64') : '',
+        data: binary ? binary : '',
         signature: binary ? (await signature(binary)).toString() : '',
         certificate: binary ? (await keystore.certificate()).toString() : '',
       }
@@ -46,7 +52,7 @@ function firmwareInfo(requestVersion) {
   let fileName, version = 0
 
   if (requestVersion) {
-    const filePath = path.join(__dirname, `../../firmware/firmware.${requestVersion}`)
+    const filePath = path.join(__dirname, `../../firmware/firmware.enc.${requestVersion}`)
 
     return fs.existsSync(filePath) ? [requestVersion.toString(), filePath] : [requestVersion.toString(), undefined]
   } else {
@@ -57,7 +63,7 @@ function firmwareInfo(requestVersion) {
         return
       }
 
-      const num = parseInt(tokens[1])
+      const num = parseInt(tokens[2])
       if (num > version) {
         version = num
         fileName = element
