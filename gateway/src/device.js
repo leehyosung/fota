@@ -99,11 +99,11 @@ async function onInput(input) {
 
       const resultOfVerification = res.firmware.data === '' ? 'N/A' : await verify(res.firmware.signature, res.firmware.data, res.firmware.certificate);
 
-      console.log(`\nresult of signature verification : ${resultOfVerification}`);
+      console.log(`\nresult of software signature verification : ${resultOfVerification}`);
 
       downloadFilePath = save(res.firmware.version, res.firmware.data);
 
-      console.log(`Downloaded firmware saved in '${downloadFilePath}`);
+      console.log(`\nDownloaded firmware saved in '${downloadFilePath}`);
     }
   }
 
@@ -117,6 +117,8 @@ async function verify(signature, binary, certificate) {
   if (!check_cert) {
     console.log('invalid signature ');
     throw new Error(`Invalid Signature `);
+  } else {
+    console.log(`\nResult of server certificate verification : ${check_cert}`);
   }
 
   const verify = crypto.createVerify('SHA256');

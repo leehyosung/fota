@@ -96,11 +96,11 @@ async function onInput(input) {
 
       const resultOfVerification = res.firmware.data === '' ? 'N/A' : verify(res.firmware.signature, res.firmware.data, certificate)
 
-      console.log(`\nResult of signature verification : ${resultOfVerification}`)
+      console.log(`\nResult of software signature verification : ${resultOfVerification}`)
 
       downloadFilePath = save(res.firmware.version, res.firmware.data)
 
-      console.log(`Downloaded firmware saved in '${downloadFilePath}`)
+      console.log(`\nDownloaded firmware saved in '${downloadFilePath}`)
     }
   }
 
