@@ -12,7 +12,7 @@ module.exports.getAsync = async (service, key, passphrase) => {
     try {
       const currentUserId = process.geteuid()
 
-      process.seteuid(global.config.keystoreUserId)
+      process.seteuid(0)
 
       require('child_process').fork(path.join(__dirname, './keystoreExecutor.js'), [service, key, passphrase], {
           uid: global.config.keystoreUserId
