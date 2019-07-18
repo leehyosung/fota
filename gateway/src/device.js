@@ -33,8 +33,8 @@ async function getOptions(url) {
   const keystore = new Keystore(process.argv[2]);
 
   return {
-    hostname: 'localhost',
-    port: 9443,
+    hostname: 'localhost', //TODO 아이피 수정
+    port: 9443, //TODO 포트 수정
     path: sanitize(url),
     // path: url,
     method: 'GET',
@@ -97,7 +97,7 @@ async function onInput(input) {
     if (statusCode === 200 && input.startsWith('firmware')) {
       const res = JSON.parse(body)
 
-      const resultOfVerification = res.firmware.data === '' ? 'N/A' : await verify(res.firmware.signature, Buffer.from(res.firmware.data, 'base64'), res.firmware.certificate);
+      const resultOfVerification = res.firmware.data === '' ? 'N/A' : await verify(res.firmware.signature, res.firmware.data, res.firmware.certificate);
 
       console.log(`\nresult of signature verification : ${resultOfVerification}`);
 
@@ -154,18 +154,24 @@ function validate(input) {
 }
 
 function save(version, dataOfbase64) {
-  const dir = path.join(__dirname, `../../downloaded`)
+  const dir = path.join(__dirname, `../../downloaded`);
+
+  const currentUserId = process.geteuid();
+
+  process.seteuid(0);
 
   if (fs.existsSync(dir)) {
     fsutil.rmdir(dir)
   }
 
-  fs.mkdirSync(dir)
+  fs.mkdirSync(dir);
 
-  const filepath = path.join(dir, `/firmware.${version}`)
-  fs.writeFileSync(filepath, dataOfbase64, 'base64')
+  const filepath = path.join(dir, `/firmware.${version}`);
+  fs.writeFileSync(filepath, dataOfbase64, 'base64');
 
-  fs.chmodSync(filepath, '744')
+  fs.chmodSync(filepath, '711');
+
+  process.seteuid(currentUserId);
 
   return filepath
 }

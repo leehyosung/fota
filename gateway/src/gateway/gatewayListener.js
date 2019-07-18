@@ -41,7 +41,7 @@ async function run() {
                 case '/':
                     finalize(res, {
                         statusCode: 200,
-                        body: 'hello 2'
+                        body: 'hello 2jo'
                     });
                     break;
 

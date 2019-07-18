@@ -1,8 +1,5 @@
 'use strict'
 
-const fs = require('fs');
-const crypto = require('crypto');
-const path = require('path');
 const https = require('https');
 
 const Keystore = require('./Keystore');
@@ -59,7 +56,7 @@ async function getOptions(url) {
   const keystore = new Keystore(process.argv[2]);
 
   return {
-    hostname: 'localhost',
+    hostname: 'localhost', //TODO 아이피 변경
     port: 8443,
     path: sanitize(url),
     // path: url,
