@@ -33,8 +33,8 @@ async function getOptions(url) {
   const keystore = new Keystore(process.argv[2]);
 
   return {
-    hostname: 'localhost', //TODO 아이피 수정
-    port: 9443, //TODO 포트 수정
+    hostname: global.config.gatewayIp,
+    port: global.config.gatewayPort,
     path: sanitize(url),
     // path: url,
     method: 'GET',
@@ -76,12 +76,12 @@ async function request(url) {
 
 function printGuide() {
   const msg =
-      `\n---------------- 2JO device emulator! ----------------------------------` +
-      `\n[version] Type for the latest version checking.` +
-      `\n[firmware] Type for downloading the latest firmware.` +
-      `\n[firmware?version=?] Type for downloading the specific firmware version.` +
-      `\n[quit or ctrl + C] Type for exit.` +
-      `\n------------------------------------------------------------------------\n`;
+    `\n---------------- 2JO device emulator! ----------------------------------` +
+    `\n[version] Type for the latest version checking.` +
+    `\n[firmware] Type for downloading the latest firmware.` +
+    `\n[firmware?version=?] Type for downloading the specific firmware version.` +
+    `\n[quit or ctrl + C] Type for exit.` +
+    `\n------------------------------------------------------------------------\n`;
 
   console.log(msg);
 }
@@ -114,7 +114,7 @@ async function verify(signature, binary, certificate) {
   const server_cert = pki.certificateFromPem(certificate);
   const check_cert = await verify_certificate(server_cert);
 
-  if(!check_cert) {
+  if (!check_cert) {
     console.log('invalid signature ');
     throw new Error(`Invalid Signature `);
   }

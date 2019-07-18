@@ -1,9 +1,9 @@
 {
-  "name": "2jo-fota",
+  "name": "2jo-sota-gateway",
   "version": "1.0.0",
-  "description": "2jo-fota",
+  "description": "2jo-sota-gateway",
   "dependencies": {
-    "request-promise": "^4.2.4"
+    "node-forge": "^0.8.5"
   },
   "devDependencies": {},
   "scripts": {

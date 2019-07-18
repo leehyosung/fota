@@ -1,20 +1,26 @@
 {
   "server": {
     "mode": "debug",
-    "keystoreUserId": 1000,
+    "port": 8443,
+    "keystoreUserId": 501,
     "keystorePassword": "U2FsdGVkX1/ZVlTjL/ZbJ8nX4eBesHhnwrBhnzb8clY=",
-    "separateProcess": false
+    "separateProcess": true
   },
   "gateway": {
     "mode": "debug",
-    "keystoreUserId": 1000,
+    "serverIp": "192.168.0.13",
+    "serverPort": 8443,
+    "port": 9443,
+    "keystoreUserId": 501,
     "keystorePassword": "U2FsdGVkX182FSwGocG6CtHYxlvfO2h+uWZwzS16qts=",
-    "separateProcess": false
+    "separateProcess": true
   },
   "device": {
     "mode": "debug",
-    "keystoreUserId": 1000,
+    "gatewayIp": "192.168.0.3",
+    "gatewayPort": 9443,
+    "keystoreUserId": 501,
     "keystorePassword": "U2FsdGVkX1/mlkh3PZxZh4vWZneN4LyUsfLUZEUPDQg=",
-    "separateProcess": false
+    "separateProcess": true
   }
 }

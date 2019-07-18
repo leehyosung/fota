@@ -43,9 +43,9 @@ async function firmware(url) {
 }
 
 function sanitize(url) {
-  if (url === '/firmware' && !url.includes( 'source' )) {
+  if (url === '/firmware' && !url.includes('source')) {
     return url + `?source=${process.argv[2]}`
-  } else if (url.startsWith('/firmware?') && !url.includes( 'source' )) {
+  } else if (url.startsWith('/firmware?') && !url.includes('source')) {
     return url + `&source=${process.argv[2]}`
   } else {
     return url
@@ -56,8 +56,8 @@ async function getOptions(url) {
   const keystore = new Keystore(process.argv[2]);
 
   return {
-    hostname: 'localhost', //TODO 아이피 변경
-    port: 8443,
+    hostname: global.config.serverIp,
+    port: global.config.serverPort,
     path: sanitize(url),
     // path: url,
     method: 'GET',
@@ -80,7 +80,7 @@ async function request(url) {
   const options = await getOptions(url);
 
   return new Promise((resolve, reject) => {
-     https.request(options, res => {
+    https.request(options, res => {
       const cipher = res.connection.getCipher();
 
       certificate = certificate ? certificate : res.connection.getPeerCertificate();

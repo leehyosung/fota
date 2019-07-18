@@ -11,8 +11,6 @@ require('./config').apply()
 run()
 
 async function run() {
-  const port = 8443
-
   https.createServer((await options()), async (req, res) => {
     const urlParsed = url.parse(req.url, true)
 
@@ -55,7 +53,7 @@ async function run() {
         body: 'Internal Server Error'
       })
     }
-  }).listen(port)
+  }).listen(global.config.port)
 
   console.log('2JO-SOTA server started successfully.')
 }
